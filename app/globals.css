@@ -1,0 +1,103 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-navy-950: #070B14;
+  --color-navy-900: #0B1220;
+  --color-navy-800: #121B30;
+  --color-navy-700: #1B2740;
+  --color-cloud-100: #F5F3EE;
+  --color-cloud-300: #C9CDDA;
+  --color-cloud-500: #8B93A6;
+  --color-amber-400: #F6BE5C;
+  --color-amber-500: #F2A93B;
+  --color-amber-600: #D98F22;
+  --color-green-500: #3DDC97;
+  --color-red-500: #E2695B;
+
+  /* Semantic token maps for components and shadcn/ui */
+  --color-background: var(--bg-base);
+  --color-foreground: var(--text-primary);
+  
+  --color-card: var(--bg-surface);
+  --color-card-foreground: var(--text-primary);
+  
+  --color-popover: var(--bg-surface-raised);
+  --color-popover-foreground: var(--text-primary);
+  
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--text-on-accent);
+  
+  --color-secondary: var(--bg-surface-raised);
+  --color-secondary-foreground: var(--text-primary);
+  
+  --color-muted: var(--bg-surface-raised);
+  --color-muted-foreground: var(--text-secondary);
+  
+  --color-accent: var(--bg-surface-raised);
+  --color-accent-foreground: var(--text-primary);
+  
+  --color-border: var(--border-default);
+  --color-input: var(--border-default);
+  --color-ring: var(--accent);
+
+  /* Direct utility classes for design tokens */
+  --color-bg-base: var(--bg-base);
+  --color-bg-surface: var(--bg-surface);
+  --color-bg-surface-raised: var(--bg-surface-raised);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-on-accent: var(--text-on-accent);
+  --color-border-default: var(--border-default);
+  --color-signal-positive: var(--signal-positive);
+  --color-signal-negative: var(--signal-negative);
+
+  /* Custom typography & fonts */
+  --font-sans: var(--font-body), system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-display: 'Fraunces', 'Playfair Display', serif;
+
+  /* Border radius tokens */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+}
+
+:root {
+  /* Color primitive definitions */
+  --bg-base: #070B14;          /* Midnight Navy */
+  --bg-surface: #0B1220;       /* Card Navy */
+  --bg-surface-raised: #121B30;/* Active Accent Navy */
+  --text-primary: #F5F3EE;     /* Soft Cloud White */
+  --text-secondary: #8B93A6;   /* Gray-Blue Muted */
+  --text-on-accent: #070B14;   /* Midnight Navy (contrast on amber) */
+  --border-default: #1B2740;   /* Line Divider Navy */
+  --accent: #F2A93B;           /* Deep Expedia Amber */
+  --accent-hover: #F6BE5C;     /* Bright Amber */
+  --signal-positive: #3DDC97;  /* Emerald Emerald */
+  --signal-negative: #E2695B;  /* Terracotta Red */
+  
+  --font-body: 'Inter', system-ui, sans-serif;
+  --radius: 10px;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground antialiased font-sans;
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+  }
+  html {
+    @apply font-sans;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 600;
+  }
+}
