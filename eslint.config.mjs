@@ -14,7 +14,17 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
   ]),
   {
-    files: ["app/**/*.tsx", "components/decision/**/*.tsx"],
+    files: [
+      "app/**/*.tsx",
+      "components/decision/**/*.tsx",
+      "components/marketing/**/*.tsx",
+      "components/map/**/*.tsx",
+      "components/charts/**/*.tsx",
+      "components/travelers/**/*.tsx",
+      "components/compare/**/*.tsx",
+      "components/nav/**/*.tsx",
+      "components/composer/**/*.tsx",
+    ],
     rules: {
       "react/forbid-elements": [
         "error",

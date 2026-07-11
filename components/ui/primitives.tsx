@@ -1,4 +1,5 @@
 import React from "react";
+import NextLink from "next/link";
 import { cn } from "@/lib/utils";
 
 // Container Primitive
@@ -185,7 +186,7 @@ export interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
   description?: string;
   icon?: React.ReactNode;
 }
-export function EmptyState({ className, title, description, icon, ...props }: EmptyStateProps) {
+export function EmptyState({ className, title, description, icon, children, ...props }: EmptyStateProps) {
   return (
     <Stack
       align="center"
@@ -196,6 +197,7 @@ export function EmptyState({ className, title, description, icon, ...props }: Em
       {icon && <div className="mb-3 text-text-secondary">{icon}</div>}
       <Text variant="heading" size="lg" className="mb-1">{title}</Text>
       {description && <Text variant="subtext">{description}</Text>}
+      {children}
     </Stack>
   );
 }
@@ -204,4 +206,134 @@ export function EmptyState({ className, title, description, icon, ...props }: Em
 export type ClickableProps = React.ButtonHTMLAttributes<HTMLButtonElement>;
 export function Clickable({ className, ...props }: ClickableProps) {
   return <button className={className} {...props} />;
+}
+
+// Section Primitive (marketing / long-form scroll sections)
+export interface SectionProps extends React.HTMLAttributes<HTMLElement> {
+  spacing?: "sm" | "md" | "lg" | "xl";
+}
+
+const sectionSpacingMap = {
+  sm: "py-8 md:py-12",
+  md: "py-12 md:py-20",
+  lg: "py-20 md:py-28",
+  xl: "py-28 md:py-36",
+};
+
+export function Section({ className, spacing = "lg", ...props }: SectionProps) {
+  return (
+    <section
+      className={cn("w-full", sectionSpacingMap[spacing], className)}
+      {...props}
+    />
+  );
+}
+
+// Grid Primitive
+export interface GridProps extends React.HTMLAttributes<HTMLDivElement> {
+  cols?: 1 | 2 | 3 | 4 | 5 | 6;
+  gap?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 8 | 12;
+}
+
+const colsMap = {
+  1: "grid-cols-1",
+  2: "grid-cols-1 sm:grid-cols-2",
+  3: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
+  4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
+  5: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-5",
+  6: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-6",
+};
+
+export function Grid({ className, cols = 3, gap = 4, ...props }: GridProps) {
+  return (
+    <div
+      className={cn("grid", colsMap[cols], gapMap[gap], className)}
+      {...props}
+    />
+  );
+}
+
+// Prose Primitive (long-form article typography)
+export type ProseProps = React.HTMLAttributes<HTMLDivElement>;
+export function Prose({ className, ...props }: ProseProps) {
+  return (
+    <div
+      className={cn(
+        "max-w-prose text-text-primary/90 leading-relaxed",
+        "[&_h2]:font-display [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:mt-10 [&_h2]:mb-3",
+        "[&_h3]:font-display [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:mt-8 [&_h3]:mb-2",
+        "[&_p]:mb-4 [&_p]:text-text-primary/85",
+        "[&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-4 [&_ul]:space-y-1",
+        "[&_strong]:font-semibold [&_strong]:text-text-primary",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+// GradientMotif Primitive — the single restrained gradient accent, used sparingly
+export interface GradientMotifProps extends React.HTMLAttributes<HTMLDivElement> {
+  variant?: "hero" | "corner";
+}
+export function GradientMotif({ className, variant = "hero", ...props }: GradientMotifProps) {
+  return (
+    <div
+      aria-hidden
+      className={cn(
+        "pointer-events-none absolute -z-10 select-none",
+        variant === "hero" &&
+          "inset-x-0 top-0 h-[520px] bg-[radial-gradient(ellipse_60%_50%_at_50%_-10%,color-mix(in_oklch,var(--accent),transparent_78%),transparent)]",
+        variant === "corner" &&
+          "-top-24 -right-24 h-72 w-72 rounded-full bg-[radial-gradient(circle,color-mix(in_oklch,var(--accent),transparent_75%),transparent_70%)] blur-2xl",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+// Field Primitive (labeled form field wrapper)
+export interface FieldProps extends React.HTMLAttributes<HTMLDivElement> {
+  label: string;
+  htmlFor?: string;
+  hint?: string;
+  error?: string;
+}
+export function Field({ className, label, htmlFor, hint, error, children, ...props }: FieldProps) {
+  return (
+    <Stack gap={2} className={cn("w-full", className)} {...props}>
+      <label htmlFor={htmlFor} className="font-sans text-sm font-medium text-text-primary">
+        {label}
+      </label>
+      {children}
+      {error ? (
+        <Text variant="subtext" size="xs" className="text-signal-negative">
+          {error}
+        </Text>
+      ) : hint ? (
+        <Text variant="subtext" size="xs">
+          {hint}
+        </Text>
+      ) : null}
+    </Stack>
+  );
+}
+
+// NavLink Primitive (active-state-aware navigation link)
+export interface NavLinkProps extends React.ComponentProps<typeof NextLink> {
+  active?: boolean;
+}
+export function NavLink({ className, active = false, ...props }: NavLinkProps) {
+  return (
+    <NextLink
+      data-active={active || undefined}
+      className={cn(
+        "font-sans text-sm font-medium text-text-secondary transition-colors hover:text-text-primary",
+        "data-[active]:text-text-primary data-[active]:font-semibold",
+        className
+      )}
+      {...props}
+    />
+  );
 }

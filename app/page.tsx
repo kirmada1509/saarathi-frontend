@@ -1,46 +1,125 @@
-"use client";
+import { Container, Stack, Text, Grid, Card, GradientMotif, NavLink, Section } from "@/components/ui/primitives";
+import { AnimatedHero } from "@/components/marketing/AnimatedHero";
+import { fetchRecommendation } from "@/lib/api";
+import { BENCHMARK_QUERIES } from "@/lib/benchmark-queries";
+import {
+  PlaneTakeoff,
+  Target,
+  GitCompareArrows,
+  MapPinned,
+  Sparkles,
+  ArrowRight,
+} from "lucide-react";
+import type { RecommendResponse } from "@/core/types";
 
-import React from "react";
-import { Container, Stack } from "@/components/ui/primitives";
-import { Header } from "@/components/decision/Header";
-import { ItineraryTimeline } from "@/components/decision/ItineraryTimeline";
-import { VerdictCard } from "@/components/decision/VerdictCard";
-import { EvidencePanel } from "@/components/decision/EvidencePanel";
-import { OpportunityCostPanel } from "@/components/decision/OpportunityCostPanel";
-import { CounterfactualPanel } from "@/components/decision/CounterfactualPanel";
-import { RankedList } from "@/components/decision/RankedList";
-import { TraceBar } from "@/components/decision/TraceBar";
+const FEATURES = [
+  {
+    icon: Target,
+    title: "One verdict, not a list",
+    body: "Saarathi commits to a single flight and defends it — the way a good travel agent would, not a wall of sortable columns.",
+  },
+  {
+    icon: GitCompareArrows,
+    title: "Exact counterfactuals",
+    body: "“United 88 wins if its fare drops below $543” — a closed-form price and preference threshold, not a vague suggestion.",
+  },
+  {
+    icon: Sparkles,
+    title: "Deterministic, inspectable",
+    body: "Every number traces to a scoring function you can invert. The LLM only writes the explanation — it never ranks or decides.",
+  },
+  {
+    icon: MapPinned,
+    title: "Real routes, real map",
+    body: "Origin, destination, and every multi-city leg plotted on a live basemap with great-circle arcs — not a placeholder graphic.",
+  },
+];
 
-export default function Home() {
+export default async function Home() {
+  let demo: RecommendResponse | null = null;
+  try {
+    demo = await fetchRecommendation({
+      userId: "U01",
+      requestText: BENCHMARK_QUERIES.U01.requestText,
+      destination: BENCHMARK_QUERIES.U01.destination,
+      perturbations: [],
+    });
+  } catch {
+    demo = null;
+  }
+
+  const flipCounterfactual = demo?.counterfactuals.find((cf) => cf.flips);
+
   return (
-    <Stack className="min-h-screen bg-bg-base text-text-primary pb-28 pt-6">
-      <Container>
-        <Stack gap={6}>
-          {/* Header Picker & Input */}
-          <Header />
-
-          {/* Multi-City Leg Timeline */}
-          <ItineraryTimeline />
-
-          {/* Zone 1: Champion Verdict & Confidence */}
-          <VerdictCard />
-
-          {/* Zones 2 & 4: Preference profile and Boundary Chips */}
-          <Stack className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            <EvidencePanel />
-            <CounterfactualPanel />
-          </Stack>
-
-          {/* Zone 3: Alternatives (Opportunity Cost) */}
-          <OpportunityCostPanel />
-
-          {/* Zone 5: Candidate list table (collapsed by default) */}
-          <RankedList />
+    <Stack className="min-h-screen bg-bg-base text-text-primary">
+      <Stack direction="row" align="center" justify="between" className="h-16 border-b border-border-default px-6">
+        <Stack direction="row" align="center" gap={2}>
+          <PlaneTakeoff className="size-5 text-accent" />
+          <Text variant="display" size="lg" weight="semibold">Saarathi</Text>
         </Stack>
-      </Container>
+        <NavLink
+          href="/app"
+          active={false}
+          className="border border-border-default rounded-md px-3 py-1.5 hover:border-accent hover:text-accent"
+        >
+          Enter app →
+        </NavLink>
+      </Stack>
 
-      {/* Zone 6: Execution payload trace bottom status bar */}
-      <TraceBar />
+      <Stack className="relative overflow-hidden">
+        <GradientMotif variant="hero" />
+        <Section spacing="xl">
+          <Container className="max-w-3xl text-center">
+            <AnimatedHero />
+          </Container>
+        </Section>
+      </Stack>
+
+      <Section spacing="lg">
+        <Container>
+          <Grid cols={4} gap={5}>
+            {FEATURES.map((f) => (
+              <Card key={f.title} className="bg-bg-surface border-border-default">
+                <Stack gap={3}>
+                  <Stack align="center" justify="center" className="size-9 rounded-md bg-accent/10 text-accent">
+                    <f.icon className="size-4.5" />
+                  </Stack>
+                  <Text variant="heading" size="base" weight="semibold">{f.title}</Text>
+                  <Text variant="body" size="sm" className="text-text-secondary">{f.body}</Text>
+                </Stack>
+              </Card>
+            ))}
+          </Grid>
+        </Container>
+      </Section>
+
+      {demo?.verdict && (
+        <Section spacing="lg">
+          <Container className="max-w-3xl">
+            <Card className="bg-bg-surface border-border-default">
+              <Stack gap={4}>
+                <Text variant="subtext" size="xs" className="uppercase tracking-wide">
+                  Live from the decision engine · Traveler U01
+                </Text>
+                <Text variant="heading" size="xl" weight="semibold">
+                  &ldquo;{demo.verdict.airline_name} {demo.verdict.flight_numbers}, {demo.verdict.origin} → {demo.verdict.destination}, ${demo.verdict.price}&rdquo;
+                </Text>
+                <Text variant="body" size="sm" className="text-text-secondary">
+                  {demo.confidence.matchPct}% match, {demo.confidence.tier} confidence.
+                  {flipCounterfactual ? ` ${flipCounterfactual.label}.` : ""}
+                </Text>
+                <NavLink
+                  href="/app/how-it-works"
+                  active={false}
+                  className="text-accent hover:text-accent-hover text-sm font-medium flex items-center gap-1 w-fit"
+                >
+                  Walk the full trace <ArrowRight className="size-3.5" />
+                </NavLink>
+              </Stack>
+            </Card>
+          </Container>
+        </Section>
+      )}
     </Stack>
   );
 }

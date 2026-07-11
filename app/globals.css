@@ -5,13 +5,25 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* Raw palette swatches (available as e.g. bg-paper-100, text-ink-700) */
+  --color-paper-50: #FBF9F5;
+  --color-paper-100: #F5F1E9;
+  --color-paper-200: #EBE4D6;
+  --color-ink-950: #1A1815;
+  --color-ink-700: #55504A;
+  --color-ink-400: #948F86;
+  --color-ink-300: #94897C;
+  --color-line-200: #E4DDD0;
+  --color-brand-600: #C2410C;
+  --color-brand-400: #F2A93B;
+
   --color-navy-950: #070B14;
   --color-navy-900: #0B1220;
   --color-navy-800: #121B30;
-  --color-navy-700: #1B2740;
-  --color-cloud-100: #F5F3EE;
-  --color-cloud-300: #C9CDDA;
-  --color-cloud-500: #8B93A6;
+  --color-navy-700: #2A3B5C;
+  --color-cloud-100: #FAFAFA;
+  --color-cloud-300: #E2E8F0;
+  --color-cloud-500: #CBD5E1;
   --color-amber-400: #F6BE5C;
   --color-amber-500: #F2A93B;
   --color-amber-600: #D98F22;
@@ -21,25 +33,25 @@
   /* Semantic token maps for components and shadcn/ui */
   --color-background: var(--bg-base);
   --color-foreground: var(--text-primary);
-  
+
   --color-card: var(--bg-surface);
   --color-card-foreground: var(--text-primary);
-  
+
   --color-popover: var(--bg-surface-raised);
   --color-popover-foreground: var(--text-primary);
-  
+
   --color-primary: var(--accent);
   --color-primary-foreground: var(--text-on-accent);
-  
+
   --color-secondary: var(--bg-surface-raised);
   --color-secondary-foreground: var(--text-primary);
-  
+
   --color-muted: var(--bg-surface-raised);
   --color-muted-foreground: var(--text-secondary);
-  
-  --color-accent: var(--bg-surface-raised);
-  --color-accent-foreground: var(--text-primary);
-  
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--text-on-accent);
+
   --color-border: var(--border-default);
   --color-input: var(--border-default);
   --color-ring: var(--accent);
@@ -55,10 +67,10 @@
   --color-signal-positive: var(--signal-positive);
   --color-signal-negative: var(--signal-negative);
 
-  /* Custom typography & fonts */
-  --font-sans: var(--font-body), system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-  --font-display: 'Fraunces', 'Playfair Display', serif;
+  /* Custom typography & fonts (populated by next/font in app/layout.tsx) */
+  --font-sans: var(--font-sans-raw), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-mono-raw), 'Fira Code', ui-monospace, monospace;
+  --font-display: var(--font-display-raw), Georgia, serif;
 
   /* Border radius tokens */
   --radius-sm: 6px;
@@ -67,21 +79,35 @@
 }
 
 :root {
-  /* Color primitive definitions */
-  --bg-base: #070B14;          /* Midnight Navy */
-  --bg-surface: #0B1220;       /* Card Navy */
-  --bg-surface-raised: #121B30;/* Active Accent Navy */
-  --text-primary: #F5F3EE;     /* Soft Cloud White */
-  --text-secondary: #8B93A6;   /* Gray-Blue Muted */
-  --text-on-accent: #070B14;   /* Midnight Navy (contrast on amber) */
-  --border-default: #1B2740;   /* Line Divider Navy */
-  --accent: #F2A93B;           /* Deep Expedia Amber */
-  --accent-hover: #F6BE5C;     /* Bright Amber */
-  --signal-positive: #3DDC97;  /* Emerald Emerald */
-  --signal-negative: #E2695B;  /* Terracotta Red */
-  
-  --font-body: 'Inter', system-ui, sans-serif;
+  /* Color primitive definitions — light, sarvam.ai-style default */
+  --bg-base: #FBF9F5;          /* Warm off-white */
+  --bg-surface: #FFFFFF;       /* Card white */
+  --bg-surface-raised: #F5F1E9;/* Hover/active warm tint */
+  --text-primary: #1A1815;     /* Near-black ink */
+  --text-secondary: #6B6459;   /* Warm gray secondary */
+  --text-on-accent: #FFFFFF;   /* White text on terracotta accent */
+  --border-default: #E4DDD0;   /* Hairline warm border */
+  --accent: #C2410C;           /* Terracotta */
+  --accent-hover: #9A3412;     /* Darker terracotta on hover */
+  --signal-positive: #15803D;  /* Green-700, readable on white */
+  --signal-negative: #B91C1C;  /* Red-700, readable on white */
+
   --radius: 10px;
+}
+
+.dark {
+  /* Color primitive definitions — dark "Bloomberg terminal" navy, opt-in */
+  --bg-base: #070B14;
+  --bg-surface: #0B1220;
+  --bg-surface-raised: #121B30;
+  --text-primary: #FAFAFA;
+  --text-secondary: #CBD5E1;
+  --text-on-accent: #070B14;
+  --border-default: #2A3B5C;
+  --accent: #F2A93B;
+  --accent-hover: #F6BE5C;
+  --signal-positive: #3DDC97;
+  --signal-negative: #E2695B;
 }
 
 @layer base {
@@ -90,8 +116,6 @@
   }
   body {
     @apply bg-background text-foreground antialiased font-sans;
-    background-color: var(--bg-base);
-    color: var(--text-primary);
   }
   html {
     @apply font-sans;
