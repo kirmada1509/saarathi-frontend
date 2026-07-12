@@ -3,8 +3,8 @@
 import * as React from "react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Container, Stack, EmptyState, NavLink } from "@/components/ui/primitives";
-import { Compass } from "lucide-react";
+import { Container, Stack, EmptyState, NavLink, Card, Text } from "@/components/ui/primitives";
+import { Compass, Sparkles } from "lucide-react";
 import { parseDecisionParams, buildDecisionQuery, perturbationsEqual } from "@/lib/decision-params";
 import { useRecommendation, useLegRecommendation, useUsers } from "@/lib/queries";
 import { DecisionHeader } from "@/components/decision/DecisionHeader";
@@ -15,6 +15,7 @@ import { OpportunityCostPanel } from "@/components/decision/OpportunityCostPanel
 import { CounterfactualPanel } from "@/components/decision/CounterfactualPanel";
 import { RankedList } from "@/components/decision/RankedList";
 import { TraceBar } from "@/components/decision/TraceBar";
+import { ConfidenceGauge } from "@/components/charts/ConfidenceGauge";
 import type { Perturbation } from "@/core/types";
 
 const RouteMap = dynamic(() => import("@/components/map/RouteMap").then((m) => m.RouteMap), {
@@ -135,12 +136,6 @@ export function DecisionScreen() {
             />
           )}
 
-          {mapLegs.length > 0 && (
-            <Stack className="h-[320px] rounded-lg overflow-hidden border border-border-default">
-              <RouteMap legs={mapLegs} className="h-full w-full" />
-            </Stack>
-          )}
-
           <VerdictCard
             response={response}
             activeResponse={activeResponse}
@@ -148,9 +143,30 @@ export function DecisionScreen() {
           />
 
           {activeResponse && (
-            <>
-              <Stack className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <Stack className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Main Column (2/3 width) */}
+              <Stack gap={6} className="lg:col-span-2">
+                {/* AI Rationale & Explanation */}
+                <Card className="bg-bg-surface border-border-default p-5 h-full">
+                  <Stack gap={4}>
+                    <Stack direction="row" align="center" gap={2} className="border-b border-border-default pb-3">
+                      <Sparkles className="w-5 h-5 text-accent animate-pulse" />
+                      <Text variant="heading" size="lg" className="text-text-primary font-bold">
+                        AI Rationale & Explanation
+                      </Text>
+                    </Stack>
+                    <div className="prose dark:prose-invert max-w-none">
+                      <Text variant="body" size="sm" className="leading-relaxed text-text-primary/95 whitespace-pre-wrap">
+                        {activeResponse.explanation}
+                      </Text>
+                    </div>
+                  </Stack>
+                </Card>
+
+                {/* PreferenceRadar & Evidence profile */}
                 <EvidencePanel preference={activeResponse.preference} confidence={activeResponse.confidence} />
+
+                {/* Counterfactual Panel */}
                 <CounterfactualPanel
                   counterfactuals={activeResponse.counterfactuals}
                   activePerturbations={params.perturbations}
@@ -160,8 +176,36 @@ export function DecisionScreen() {
                 />
               </Stack>
 
-              <OpportunityCostPanel alternatives={activeResponse.alternatives} verdict={activeResponse.verdict} />
+              {/* Sidebar Column (1/3 width) */}
+              <Stack gap={6} className="lg:col-span-1">
+                {/* Compact Route Map */}
+                {mapLegs.length > 0 && (
+                  <Card className="bg-bg-surface border-border-default overflow-hidden h-[280px]">
+                    <Stack gap={2} className="h-full">
+                      <Text variant="heading" size="sm" className="px-4 pt-3 font-semibold text-text-primary">
+                        Route Trajectory Map
+                      </Text>
+                      <div className="flex-1 rounded-b-lg overflow-hidden border-t border-border-default">
+                        <RouteMap legs={mapLegs} className="h-full w-full" />
+                      </div>
+                    </Stack>
+                  </Card>
+                )}
 
+                {/* Confidence Gauge */}
+                <Card className="bg-bg-surface border-border-default p-5 flex flex-col items-center justify-center">
+                  <Text variant="heading" size="sm" className="w-full text-left font-semibold text-text-primary border-b border-border-default pb-2 mb-4">
+                    Scoring Match Confidence
+                  </Text>
+                  <ConfidenceGauge confidence={activeResponse.confidence} />
+                </Card>
+              </Stack>
+            </Stack>
+          )}
+
+          {activeResponse && (
+            <>
+              <OpportunityCostPanel alternatives={activeResponse.alternatives} verdict={activeResponse.verdict} />
               <RankedList ranked={activeResponse.ranked} verdict={activeResponse.verdict} />
             </>
           )}
