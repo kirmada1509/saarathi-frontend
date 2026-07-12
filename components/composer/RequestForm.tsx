@@ -33,18 +33,30 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
       setError(null);
       setShowStaysConfirmation(false);
 
-      if (seed.requestText !== "Find me flights.") {
-        setRequestText(seed.requestText);
+      const savedText = localStorage.getItem(`saarathi_request_text_${selectedUserId}`);
+      if (savedText) {
+        setRequestText(savedText);
       } else {
-        const activeUserObj = users.find((u) => u.user_id === selectedUserId);
-        if (activeUserObj) {
-          setRequestText(`I want to find a flight from ${activeUserObj.home_airport} to `);
+        if (seed.requestText !== "Find me flights.") {
+          setRequestText(seed.requestText);
         } else {
-          setRequestText("Find me flights.");
+          const activeUserObj = users.find((u) => u.user_id === selectedUserId);
+          if (activeUserObj) {
+            setRequestText(`I want to find a flight from ${activeUserObj.home_airport} to `);
+          } else {
+            setRequestText("Find me flights.");
+          }
         }
       }
     }
   }, [selectedUserId, users]);
+
+  // Persist requestText changes to localStorage
+  React.useEffect(() => {
+    if (selectedUserId && requestText) {
+      localStorage.setItem(`saarathi_request_text_${selectedUserId}`, requestText);
+    }
+  }, [selectedUserId, requestText]);
 
   async function handlePlanItinerary(e: React.FormEvent) {
     e.preventDefault();

@@ -23,6 +23,21 @@ export default function ComposerPage() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Load saved traveler ID
+  React.useEffect(() => {
+    const saved = localStorage.getItem("saarathi_selected_user_id");
+    if (saved) {
+      setSelectedUserId(saved);
+    }
+  }, []);
+
+  // Save traveler ID on change
+  React.useEffect(() => {
+    if (selectedUserId) {
+      localStorage.setItem("saarathi_selected_user_id", selectedUserId);
+    }
+  }, [selectedUserId]);
+
   const startDragging = React.useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     const startX = e.clientX;
