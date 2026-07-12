@@ -30,7 +30,7 @@ export function EvidencePanel({
             <Text variant="heading" size="sm" className="text-accent font-semibold">
               Inferred dimension weights
             </Text>
-            <PreferenceRadar preference={preference} className="mx-auto h-[200px] w-full" />
+            <PreferenceRadar preference={preference} className="mx-auto h-50 w-full" />
             <Stack gap={1} className="border-t border-border-default pt-3 mt-1 text-xs">
               <Text variant="body" size="xs" weight="medium">Other hard constraints</Text>
               <Text variant="mono" size="xs" className="text-text-primary">
@@ -50,7 +50,7 @@ export function EvidencePanel({
               <Badge variant="default">{preference.evidence.length} indicators</Badge>
             </Stack>
 
-            <Stack className="border border-border-default rounded-md overflow-hidden bg-bg-surface-raised/10 max-h-[260px] overflow-y-auto">
+            <Stack className="border border-border-default rounded-md overflow-hidden bg-bg-surface-raised/10 max-h-65 overflow-y-auto">
               <Stack gap={0} className="divide-y divide-border-default">
                 {preference.evidence.map((item: EvidenceItem, index: number) => {
                   const isStrong = strongSet.has(item.dimension);

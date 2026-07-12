@@ -15,7 +15,7 @@ function DecisionFallback() {
     <Container className="py-6">
       <Stack gap={6}>
         <Skeleton className="h-28 w-full" />
-        <Skeleton className="h-[320px] w-full" />
+        <Skeleton className="h-80 w-full" />
         <Skeleton className="h-64 w-full" />
         <Skeleton className="h-48 w-full" />
       </Stack>

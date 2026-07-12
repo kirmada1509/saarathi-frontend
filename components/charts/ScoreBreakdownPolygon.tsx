@@ -39,7 +39,7 @@ export function ScoreBreakdownPolygon({
     }));
 
   return (
-    <ChartContainer config={chartConfig} className={cn("h-[240px] w-full max-w-[360px] mx-auto", className)}>
+    <ChartContainer config={chartConfig} className={cn("h-60 w-full max-w-90 mx-auto", className)}>
       <RadarChart data={data}>
         <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
         <PolarAngleAxis

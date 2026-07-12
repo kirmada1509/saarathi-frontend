@@ -28,7 +28,7 @@ export function PreferenceRadar({
   ];
 
   return (
-    <ChartContainer config={chartConfig} className={cn("h-[200px] w-full", className)}>
+    <ChartContainer config={chartConfig} className={cn("h-50 w-full", className)}>
       <RadarChart data={data}>
         <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
         <PolarAngleAxis dataKey="dimension" tick={{ fill: "var(--text-secondary)", fontSize: 11 }} />

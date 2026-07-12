@@ -45,9 +45,9 @@ export function CompareColumn({
               <Badge variant="default">{user?.direct_preference} direct</Badge>
             </Stack>
 
-            <ConfidenceGauge confidence={response.confidence} className="max-w-[120px]" />
+            <ConfidenceGauge confidence={response.confidence} className="max-w-30" />
 
-            <PreferenceRadar preference={response.preference} className="mx-auto h-[180px] w-full" />
+            <PreferenceRadar preference={response.preference} className="mx-auto h-45 w-full" />
 
             {response.verdict ? (
               <Stack gap={1} className="border-t border-border-default pt-3">

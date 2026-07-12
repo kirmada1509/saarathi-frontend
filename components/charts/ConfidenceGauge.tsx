@@ -24,7 +24,7 @@ export function ConfidenceGauge({
   const config = { match: { label: "Match", color } } satisfies ChartConfig;
 
   return (
-    <Stack className={cn("relative mx-auto aspect-square w-full max-w-[160px]", className)}>
+    <Stack className={cn("relative mx-auto aspect-square w-full max-w-40", className)}>
       <ChartContainer config={config} className="aspect-square">
         <RadialBarChart
           data={data}

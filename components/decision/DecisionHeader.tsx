@@ -22,7 +22,7 @@ export function DecisionHeader({
   return (
     <Card className="bg-bg-surface border-border-default">
       <Stack direction="row" align="start" justify="between" gap={4} className="flex-wrap">
-        <Stack gap={2} className="flex-1 min-w-[260px]">
+        <Stack gap={2} className="flex-1 min-w-65">
           <Stack direction="row" align="center" gap={2} className="flex-wrap">
             <Badge variant="warning">{user ? user.user_id : params.userId}</Badge>
             {mode === "multi-city" && (

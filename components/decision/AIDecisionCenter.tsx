@@ -68,7 +68,7 @@ function ProfileTab({
             </Text>
             <Badge variant="default">{preference.evidence.length} indicators</Badge>
           </Stack>
-          <Stack className="border border-border-default rounded-xl overflow-hidden max-h-[340px] overflow-y-auto" gap={0}>
+          <Stack className="border border-border-default rounded-xl overflow-hidden max-h-85 overflow-y-auto" gap={0}>
             <Stack gap={0} className="divide-y divide-border-default">
               {preference.evidence.map((item: EvidenceItem, index: number) => {
                 const isStrong = strongSet.has(item.dimension);
@@ -81,11 +81,11 @@ function ProfileTab({
                     className="p-3 hover:bg-bg-surface-raised/40 transition-colors"
                   >
                     {isStrong ? (
-                      <span className="mt-0.5 flex-shrink-0 bg-signal-positive/10 border border-signal-positive/30 rounded p-0.5 flex items-center justify-center">
+                      <span className="mt-0.5 shrink-0 bg-signal-positive/10 border border-signal-positive/30 rounded p-0.5 flex items-center justify-center">
                         <Check className="w-3 h-3 text-signal-positive" />
                       </span>
                     ) : (
-                      <span className="mt-0.5 flex-shrink-0 bg-bg-surface-raised border border-border-default rounded p-0.5 flex items-center justify-center">
+                      <span className="mt-0.5 shrink-0 bg-bg-surface-raised border border-border-default rounded p-0.5 flex items-center justify-center">
                         <HelpCircle className="w-3 h-3 text-text-secondary" />
                       </span>
                     )}
@@ -124,7 +124,7 @@ function TradeoffsTab({ breakdown }: { breakdown?: Record<string, number> }) {
       <Text variant="subtext" size="sm">
         Multi-attribute score contributions shown as a polygonal alignment footprint. A larger, well-balanced polygon indicates better overall coverage of traveler preferences.
       </Text>
-      <ScoreBreakdownPolygon breakdown={breakdown} className="h-[240px]" />
+      <ScoreBreakdownPolygon breakdown={breakdown} className="h-60" />
     </Stack>
   );
 }
@@ -197,12 +197,12 @@ function SensitivityTab({
                       </Text>
                     </Stack>
                     {active ? (
-                      <span className="bg-accent text-text-on-accent rounded-full p-0.5 mt-0.5 flex items-center justify-center flex-shrink-0">
-                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      <span className="bg-accent text-text-on-accent rounded-full p-0.5 mt-0.5 flex items-center justify-center shrink-0">
+                        <Check className="w-3.5 h-3.5 stroke-3" />
                       </span>
                     ) : (
                       cf.flips && (
-                        <Badge variant="warning" className="text-[9px] mt-0.5 select-none flex-shrink-0">
+                        <Badge variant="warning" className="text-[9px] mt-0.5 select-none shrink-0">
                           High impact
                         </Badge>
                       )
@@ -247,12 +247,12 @@ function SensitivityTab({
                       </Text>
                     </Stack>
                     {active ? (
-                      <span className="bg-accent text-text-on-accent rounded-full p-0.5 mt-0.5 flex items-center justify-center flex-shrink-0">
-                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      <span className="bg-accent text-text-on-accent rounded-full p-0.5 mt-0.5 flex items-center justify-center shrink-0">
+                        <Check className="w-3.5 h-3.5 stroke-3" />
                       </span>
                     ) : (
                       cf.flips && (
-                        <Badge variant="success" className="text-[9px] mt-0.5 select-none flex-shrink-0">
+                        <Badge variant="success" className="text-[9px] mt-0.5 select-none shrink-0">
                           Achievable
                         </Badge>
                       )

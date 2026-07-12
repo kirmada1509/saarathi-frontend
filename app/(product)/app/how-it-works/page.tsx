@@ -89,7 +89,7 @@ export default async function HowItWorksPage() {
                     <Text variant="body" size="sm" className="text-text-secondary">
                       {STAGE_DESCRIPTIONS[stage.id]}
                     </Text>
-                    <Stack className="bg-bg-surface-raised border border-border-default rounded-md p-3 overflow-x-auto max-h-[220px]">
+                    <Stack className="bg-bg-surface-raised border border-border-default rounded-md p-3 overflow-x-auto max-h-55">
                       <pre className="font-mono text-[11px] leading-relaxed text-text-primary/90 whitespace-pre-wrap">
                         {JSON.stringify(stage.payload, null, 2)}
                       </pre>

@@ -32,7 +32,7 @@ export function StickyNav({ activeSection, onNavigate, engineSynced = true }: St
       gap={0}
     >
       {/* Left: Saarathi label */}
-      <Stack direction="row" align="center" gap={2} className="min-w-[130px] border-r border-border-default pr-4 mr-4 shrink-0">
+      <Stack direction="row" align="center" gap={2} className="min-w-32.5 border-r border-border-default pr-4 mr-4 shrink-0">
         <Terminal className="w-3.5 h-3.5 text-accent" />
         <Text variant="mono" size="xs" weight="bold" className="text-accent uppercase tracking-wider">
           Saarathi
@@ -67,7 +67,7 @@ export function StickyNav({ activeSection, onNavigate, engineSynced = true }: St
       </Stack>
 
       {/* Right: engine status */}
-      <Stack direction="row" align="center" gap={2} className="min-w-[130px] border-l border-border-default pl-4 ml-4 justify-end shrink-0">
+      <Stack direction="row" align="center" gap={2} className="min-w-32.5 border-l border-border-default pl-4 ml-4 justify-end shrink-0">
         <span className={`w-2 h-2 rounded-full ${engineSynced ? "bg-signal-positive" : "bg-accent animate-pulse"}`} />
         <Text variant="mono" size="xs" className="text-text-secondary font-medium">
           {engineSynced ? "Engine synced" : "Processing…"}

@@ -74,7 +74,7 @@ export default function ComposerPage() {
           <Stack className="flex-1 w-full min-w-0">
             <Stack gap={6}>
               <Stack direction="row" align="center" justify="between" className="flex-wrap gap-4">
-                <Stack gap={2} className="flex-1 min-w-[280px]">
+                <Stack gap={2} className="flex-1 min-w-70">
                   <Text variant="display" size="3xl" weight="semibold">
                     Plan a trip
                   </Text>
@@ -100,15 +100,15 @@ export default function ComposerPage() {
           {!isCollapsed && (
             <Stack
               onMouseDown={startDragging}
-              className="hidden lg:block w-2 hover:bg-accent/10 cursor-col-resize self-stretch transition-colors select-none relative group min-h-[400px]"
+              className="hidden lg:block w-2 hover:bg-accent/10 cursor-col-resize self-stretch transition-colors select-none relative group min-h-100"
               title="Drag to resize sidebar"
             >
               {/* Center divider line */}
-              <Stack className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[1px] bg-border-default group-hover:bg-accent" />
+              <Stack className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-px bg-border-default group-hover:bg-accent" />
               {/* Visual Splitter Grabber Indicator */}
-              <Stack className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-7 rounded bg-bg-surface-raised border border-border-default flex items-center justify-center gap-[2px] px-[3px] group-hover:border-accent group-hover:shadow-sm">
-                <span className="w-[1px] h-3 bg-text-secondary/40 group-hover:bg-accent/60" />
-                <span className="w-[1px] h-3 bg-text-secondary/40 group-hover:bg-accent/60" />
+              <Stack className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-7 rounded bg-bg-surface-raised border border-border-default flex items-center justify-center gap-0.5 px-0.75 group-hover:border-accent group-hover:shadow-sm">
+                <span className="w-px h-3 bg-text-secondary/40 group-hover:bg-accent/60" />
+                <span className="w-px h-3 bg-text-secondary/40 group-hover:bg-accent/60" />
               </Stack>
             </Stack>
           )}
@@ -117,10 +117,10 @@ export default function ComposerPage() {
           {!isCollapsed && (
             <Stack
               style={{ width: isLargeScreen ? `${width}px` : "100%" }}
-              className="w-full lg:w-auto lg:flex-shrink-0"
+              className="w-full lg:w-auto lg:shrink-0"
             >
               <Card 
-                className="bg-bg-surface border-border-default h-full max-h-[720px] flex flex-col lg:min-w-[280px] w-full"
+                className="bg-bg-surface border-border-default h-full max-h-180 flex flex-col lg:min-w-70 w-full"
               >
                 <Stack gap={4} className="p-5 border-b border-border-default">
                   <Stack direction="row" align="center" justify="between">

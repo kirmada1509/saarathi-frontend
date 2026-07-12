@@ -124,28 +124,30 @@ function AlternativeCard({ alt, isRecommended }: AlternativeCardProps) {
             {new Date(alt.flight.departure_utc).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
           </Text>
 
+          {/* Quick metric badges */}
+          <Stack direction="row" gap={2} className="flex-wrap">
+            {alt.flight.refundable && <Badge variant="success">Refundable</Badge>}
+            {alt.flight.baggage_included && <Badge variant="success">Bags included</Badge>}
+          </Stack>
+
           {/* Gain / cost breakdown */}
           <Stack className="border-t border-border-default pt-3" gap={2}>
             <Stack direction="row" align="start" gap={2}>
-              <TrendingUp className="w-3.5 h-3.5 text-signal-positive mt-0.5 flex-shrink-0" />
+              <TrendingUp className="w-3.5 h-3.5 text-signal-positive mt-0.5 shrink-0" />
               <Stack gap={0}>
                 <Text variant="subtext" size="xs" className="uppercase tracking-wider font-semibold text-signal-positive">What you gain</Text>
                 <Text variant="mono" size="xs" className="text-signal-positive font-medium mt-0.5">{alt.gain}</Text>
               </Stack>
             </Stack>
-            <Stack direction="row" align="start" gap={2}>
-              <TrendingDown className="w-3.5 h-3.5 text-text-secondary mt-0.5 flex-shrink-0" />
-              <Stack gap={0}>
-                <Text variant="subtext" size="xs" className="uppercase tracking-wider font-semibold text-text-secondary">What you sacrifice</Text>
-                <Text variant="mono" size="xs" className="text-text-secondary mt-0.5">{alt.cost}</Text>
+            {!isRecommended && (
+              <Stack direction="row" align="start" gap={2}>
+                <TrendingDown className="w-3.5 h-3.5 text-text-secondary mt-0.5 shrink-0" />
+                <Stack gap={0}>
+                  <Text variant="subtext" size="xs" className="uppercase tracking-wider font-semibold text-text-secondary">What you sacrifice</Text>
+                  <Text variant="mono" size="xs" className="text-text-secondary mt-0.5">{alt.cost}</Text>
+                </Stack>
               </Stack>
-            </Stack>
-          </Stack>
-
-          {/* Quick metric badges */}
-          <Stack direction="row" gap={2} className="flex-wrap">
-            {alt.flight.refundable && <Badge variant="success">Refundable</Badge>}
-            {alt.flight.baggage_included && <Badge variant="success">Bags included</Badge>}
+            )}
           </Stack>
         </Stack>
       ) : (

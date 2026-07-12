@@ -35,7 +35,7 @@ export function ExecutiveSummary({ response, activeResponse, isLoading, user, on
   if (isLoading) {
     return (
       <Stack className="rounded-2xl border border-border-default bg-bg-surface overflow-hidden">
-        <Stack className="h-[280px] animate-pulse bg-bg-surface-raised/50 items-center justify-center" align="center" justify="center" gap={3}>
+        <Stack className="h-70 animate-pulse bg-bg-surface-raised/50 items-center justify-center" align="center" justify="center" gap={3}>
           <span className="w-10 h-10 border-4 border-accent border-t-transparent rounded-full animate-spin" />
           <Text variant="subtext" size="sm">AI decision engine running…</Text>
         </Stack>
@@ -47,17 +47,7 @@ export function ExecutiveSummary({ response, activeResponse, isLoading, user, on
 
   const { verdict, confidence, explanation, alternatives, ranked } = activeResponse;
   const mode = response?.mode;
-  const itinerary = response?.itinerary;
 
-  const airports = itinerary
-    ? itinerary.legs.reduce((acc: string[], leg) => {
-        if (acc.length === 0) {
-          acc.push(leg.from);
-        }
-        acc.push(leg.to);
-        return acc;
-      }, [])
-    : [];
 
   // Savings vs next-best
   const runnerUp: ScoredFlight | undefined = ranked.find((f) => f.flight_id !== verdict.flight_id);
@@ -210,21 +200,21 @@ export function ExecutiveSummary({ response, activeResponse, isLoading, user, on
 
                 {/* Key metrics row */}
                 <Stack direction="row" gap={4} className="flex-wrap">
-                  <Stack className="bg-bg-surface-raised/60 border border-border-default rounded-xl p-4 flex-1 min-w-[120px]" gap={1}>
+                  <Stack className="bg-bg-surface-raised/60 border border-border-default rounded-xl p-4 flex-1 min-w-30" gap={1}>
                     <Stack direction="row" align="center" gap={1}>
                       <Banknote className="w-3.5 h-3.5 text-text-secondary" />
                       <Text variant="subtext" size="xs" className="uppercase tracking-wider">Total fare</Text>
                     </Stack>
                     <Text variant="mono" size="xl" weight="bold" className="text-accent">{formattedPrice}</Text>
                   </Stack>
-                  <Stack className="bg-bg-surface-raised/60 border border-border-default rounded-xl p-4 flex-1 min-w-[120px]" gap={1}>
+                  <Stack className="bg-bg-surface-raised/60 border border-border-default rounded-xl p-4 flex-1 min-w-30" gap={1}>
                     <Stack direction="row" align="center" gap={1}>
                       <Clock className="w-3.5 h-3.5 text-text-secondary" />
                       <Text variant="subtext" size="xs" className="uppercase tracking-wider">Flight time</Text>
                     </Stack>
                     <Text variant="mono" size="xl" weight="bold" className="text-text-primary">{durationStr}</Text>
                   </Stack>
-                  <Stack className="bg-bg-surface-raised/60 border border-border-default rounded-xl p-4 flex-1 min-w-[120px]" gap={1}>
+                  <Stack className="bg-bg-surface-raised/60 border border-border-default rounded-xl p-4 flex-1 min-w-30" gap={1}>
                     <Stack direction="row" align="center" gap={1}>
                       <Route className="w-3.5 h-3.5 text-text-secondary" />
                       <Text variant="subtext" size="xs" className="uppercase tracking-wider">Stops</Text>
@@ -234,7 +224,7 @@ export function ExecutiveSummary({ response, activeResponse, isLoading, user, on
                     </Text>
                   </Stack>
                   {savingsVsNext !== null && savingsVsNext > 0 && (
-                    <Stack className="bg-signal-positive/5 border border-signal-positive/20 rounded-xl p-4 flex-1 min-w-[120px]" gap={1}>
+                    <Stack className="bg-signal-positive/5 border border-signal-positive/20 rounded-xl p-4 flex-1 min-w-30" gap={1}>
                       <Stack direction="row" align="center" gap={1}>
                         <TrendingDown className="w-3.5 h-3.5 text-signal-positive" />
                         <Text variant="subtext" size="xs" className="uppercase tracking-wider text-signal-positive">vs next-best</Text>
@@ -245,7 +235,7 @@ export function ExecutiveSummary({ response, activeResponse, isLoading, user, on
                     </Stack>
                   )}
                   {cheapestAlt && cheapestAlt.deltaPrice > 0 && savingsVsNext === null && (
-                    <Stack className="bg-signal-positive/5 border border-signal-positive/20 rounded-xl p-4 flex-1 min-w-[120px]" gap={1}>
+                    <Stack className="bg-signal-positive/5 border border-signal-positive/20 rounded-xl p-4 flex-1 min-w-30" gap={1}>
                       <Stack direction="row" align="center" gap={1}>
                         <TrendingDown className="w-3.5 h-3.5 text-signal-positive" />
                         <Text variant="subtext" size="xs" className="uppercase tracking-wider text-signal-positive">savings</Text>

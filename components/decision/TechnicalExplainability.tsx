@@ -57,9 +57,9 @@ function AccordionSection({ title, icon, badge, defaultOpen = false, children }:
           {badge && <Badge variant="default">{badge}</Badge>}
         </Stack>
         {open ? (
-          <ChevronDown className="w-4 h-4 text-text-secondary flex-shrink-0" />
+          <ChevronDown className="w-4 h-4 text-text-secondary shrink-0" />
         ) : (
-          <ChevronRight className="w-4 h-4 text-text-secondary flex-shrink-0" />
+          <ChevronRight className="w-4 h-4 text-text-secondary shrink-0" />
         )}
       </Clickable>
       <AnimatePresence>
@@ -182,7 +182,7 @@ export function TechnicalExplainability({ trace, ranked, verdict }: TechnicalExp
                           }`}
                         >
                           <span className="col-span-2 flex items-center gap-2">
-                            <Text variant="mono" size="xs" className="text-text-secondary font-bold min-w-[20px]">
+                            <Text variant="mono" size="xs" className="text-text-secondary font-bold min-w-5">
                               #{index + 1}
                             </Text>
                             <Stack gap={1}>
@@ -213,7 +213,7 @@ export function TechnicalExplainability({ trace, ranked, verdict }: TechnicalExp
                         {isExpanded && f.breakdown && (
                           <Stack className="p-4 bg-bg-surface-raised/60 border-t border-b border-border-default/60" gap={4}>
                             <Stack className="grid grid-cols-1 md:grid-cols-2 gap-4" gap={0}>
-                              <ScoreBreakdownPolygon breakdown={f.breakdown} className="h-[200px]" />
+                              <ScoreBreakdownPolygon breakdown={f.breakdown} className="h-50" />
                               <Stack gap={3}>
                                 <Text variant="heading" size="xs" className="text-accent font-semibold flex items-center gap-1.5">
                                   <Award className="w-3.5 h-3.5" /> Score breakdown
@@ -268,7 +268,7 @@ export function TechnicalExplainability({ trace, ranked, verdict }: TechnicalExp
 
       {/* Trace detail sheet */}
       <Sheet open={selectedStageId !== null} onOpenChange={(open) => !open && setSelectedStageId(null)}>
-        <SheetContent className="w-full sm:max-w-xl bg-bg-surface border-l border-border-default text-text-primary p-6 overflow-y-auto z-[9999]">
+        <SheetContent className="w-full sm:max-w-xl bg-bg-surface border-l border-border-default text-text-primary p-6 overflow-y-auto z-9999">
           <SheetHeader className="mb-4">
             <SheetTitle className="text-accent font-display text-xl flex items-center gap-2 border-b border-border-default pb-3">
               <Terminal className="w-5 h-5 text-accent" />

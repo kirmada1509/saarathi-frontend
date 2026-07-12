@@ -31,14 +31,14 @@ export function TraceBar({ trace }: { trace: TraceStage[] }) {
         className="sticky bottom-0 left-0 right-0 z-30 h-14 bg-bg-surface/95 border-t border-border-default px-4 sm:px-6 justify-between shadow-[0_-4px_16px_rgba(0,0,0,0.04)] backdrop-blur-md"
       >
         <Stack direction="row" align="center" gap={3} className="w-full justify-between flex-nowrap overflow-x-auto py-1">
-          <Stack direction="row" align="center" gap={2} className="min-w-[120px] border-r border-border-default pr-4 mr-2 shrink-0">
+          <Stack direction="row" align="center" gap={2} className="min-w-30 border-r border-border-default pr-4 mr-2 shrink-0">
             <Terminal className="w-4 h-4 text-accent" />
             <Text variant="mono" size="xs" weight="bold" className="text-accent uppercase tracking-wider">
               Decision Trace
             </Text>
           </Stack>
 
-          <Stack direction="row" align="center" gap={2} className="flex-1 justify-center flex-nowrap min-w-[600px]">
+          <Stack direction="row" align="center" gap={2} className="flex-1 justify-center flex-nowrap min-w-150">
             {trace.map((stage: TraceStage, index: number) => (
               <React.Fragment key={stage.id}>
                 <Clickable
@@ -49,13 +49,13 @@ export function TraceBar({ trace }: { trace: TraceStage[] }) {
                   <span>{stage.label}</span>
                 </Clickable>
                 {index < trace.length - 1 && (
-                  <ArrowRight className="w-3.5 h-3.5 text-text-secondary opacity-40 flex-shrink-0" />
+                  <ArrowRight className="w-3.5 h-3.5 text-text-secondary opacity-40 shrink-0" />
                 )}
               </React.Fragment>
             ))}
           </Stack>
 
-          <Stack direction="row" align="center" gap={2} className="min-w-[130px] justify-end border-l border-border-default pl-4 ml-2 shrink-0">
+          <Stack direction="row" align="center" gap={2} className="min-w-32.5 justify-end border-l border-border-default pl-4 ml-2 shrink-0">
             <span className="w-2 h-2 rounded-full bg-signal-positive" />
             <Text variant="mono" size="xs" className="text-text-secondary font-medium">
               Engine synced
@@ -65,7 +65,7 @@ export function TraceBar({ trace }: { trace: TraceStage[] }) {
       </Stack>
 
       <Sheet open={selectedStageId !== null} onOpenChange={(open) => !open && setSelectedStageId(null)}>
-        <SheetContent className="w-full sm:max-w-xl bg-bg-surface border-l border-border-default text-text-primary p-6 overflow-y-auto z-[9999]">
+        <SheetContent className="w-full sm:max-w-xl bg-bg-surface border-l border-border-default text-text-primary p-6 overflow-y-auto z-9999">
           <SheetHeader className="mb-4">
             <SheetTitle className="text-accent font-display text-xl flex items-center gap-2 border-b border-border-default pb-3">
               <Terminal className="w-5 h-5 text-accent" />

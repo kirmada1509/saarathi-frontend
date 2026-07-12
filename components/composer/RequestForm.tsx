@@ -187,7 +187,7 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
                     <Stack align="center" justify="center" className="flex h-7 w-7 shrink-0 rounded-full border-2 border-border-default bg-bg-surface text-text-secondary text-xs font-mono font-bold shadow-xs">
                       {formattedNumber}
                     </Stack>
-                    {showLine && <Stack className="w-0.5 flex-1 min-h-[40px] bg-border-default" />}
+                    {showLine && <Stack className="w-0.5 flex-1 min-h-10 bg-border-default" />}
                   </Stack>
                   {/* Stepper Content (Right Column) */}
                   <Stack className="flex-1 pb-5 min-w-0" gap={0}>

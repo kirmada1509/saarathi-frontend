@@ -283,7 +283,7 @@ export function GradientMotif({ className, variant = "hero", ...props }: Gradien
       className={cn(
         "pointer-events-none absolute -z-10 select-none",
         variant === "hero" &&
-          "inset-x-0 top-0 h-[520px] bg-[radial-gradient(ellipse_60%_50%_at_50%_-10%,color-mix(in_oklch,var(--accent),transparent_78%),transparent)]",
+          "inset-x-0 top-0 h-130 bg-[radial-gradient(ellipse_60%_50%_at_50%_-10%,color-mix(in_oklch,var(--accent),transparent_78%),transparent)]",
         variant === "corner" &&
           "-top-24 -right-24 h-72 w-72 rounded-full bg-[radial-gradient(circle,color-mix(in_oklch,var(--accent),transparent_75%),transparent_70%)] blur-2xl",
         className
@@ -330,7 +330,7 @@ export function NavLink({ className, active = false, ...props }: NavLinkProps) {
       data-active={active || undefined}
       className={cn(
         "font-sans text-sm font-medium text-text-secondary transition-colors hover:text-text-primary",
-        "data-[active]:text-text-primary data-[active]:font-semibold",
+        "data-active:text-text-primary data-active:font-semibold",
         className
       )}
       {...props}
