@@ -34,6 +34,7 @@ export function DecisionScreen() {
       ? {
           userId: params.userId,
           requestText: params.requestText,
+          origin: params.origin,
           destination: params.destination,
           cities: params.cities,
           stayDurations: params.stayDurations,

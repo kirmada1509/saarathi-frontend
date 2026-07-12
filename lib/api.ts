@@ -45,8 +45,10 @@ export async function fetchRecommendation(
 export interface InferredRouteResponse {
   mode: "single" | "multi";
   destination?: string;
+  origin?: string;
   cities?: string[];
   stayDurations: Record<string, number>;
+  placeNames: Record<string, string>;
 }
 
 export async function parseRoute(payload: {

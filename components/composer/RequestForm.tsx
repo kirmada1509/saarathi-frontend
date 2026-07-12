@@ -24,6 +24,7 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
   const [showStaysConfirmation, setShowStaysConfirmation] = React.useState(false);
   const [inferredCities, setInferredCities] = React.useState<string[]>([]);
   const [inferredStayDurations, setInferredStayDurations] = React.useState<Record<string, number>>({});
+  const [placeNames, setPlaceNames] = React.useState<Record<string, string>>({});
 
   // Sync state whenever selectedUserId is changed from the parent sidebar
   React.useEffect(() => {
@@ -68,6 +69,7 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
         const query = buildDecisionQuery({
           userId: selectedUserId,
           requestText,
+          origin: res.origin || undefined,
           destination: res.destination || undefined,
         });
         router.push(`/app/decision?${query}`);
@@ -75,6 +77,7 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
         // Multi-city: intercept flow and ask for stays confirmation
         setInferredCities(res.cities || []);
         setInferredStayDurations(res.stayDurations || {});
+        setPlaceNames(res.placeNames || {});
         setShowStaysConfirmation(true);
       }
     } catch (err) {
@@ -134,7 +137,9 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
               >
                 <Stack direction="row" align="center" gap={3}>
                   <Badge variant="default">{index + 1}</Badge>
-                  <Text variant="mono" size="sm" weight="bold">{code}</Text>
+                  <Text variant="mono" size="sm" weight="bold">
+                    {code} {placeNames[code] ? `(${placeNames[code]})` : ""}
+                  </Text>
                 </Stack>
 
                 <Stack direction="row" align="center" gap={2}>

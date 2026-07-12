@@ -178,7 +178,7 @@ export function VerdictCard({
                 <Stack gap={1} className="pl-2 pt-1 font-mono text-xs text-text-secondary">
                   {itinerary.legs.map((l: MultiCityLeg, index: number) => (
                     <Text key={l.flight.flight_id} variant="mono" size="xs">
-                      {index + 1}. {l.from} → {l.to} ({l.flight.airline_name} {l.flight.flight_numbers}, {l.flight.cabin_class})
+                      {index + 1}. {l.from} ({l.flight.origin_city}) → {l.to} ({l.flight.destination_city}) ({l.flight.airline_name} {l.flight.flight_numbers}, {l.flight.cabin_class})
                     </Text>
                   ))}
                 </Stack>

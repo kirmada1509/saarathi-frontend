@@ -16,6 +16,7 @@ export function useUsers(): UseQueryResult<UserSummary[]> {
 export interface RecommendationParams {
   userId: string;
   requestText: string;
+  origin?: string;
   destination?: string;
   cities?: string[];
   stayDurations?: Record<string, number>;
@@ -27,6 +28,7 @@ function recommendationKey(params: RecommendationParams) {
     "recommendation",
     params.userId,
     params.requestText,
+    params.origin ?? "",
     params.destination ?? "",
     (params.cities ?? []).join(","),
     JSON.stringify(params.stayDurations ?? {}),
@@ -49,6 +51,7 @@ export function useRecommendation(
         requestText: p.requestText,
         perturbations: p.perturbations ?? [],
         stayDurations: p.stayDurations,
+        origin: p.origin,
       };
       if (p.cities && p.cities.length > 0) {
         payload.cities = p.cities;

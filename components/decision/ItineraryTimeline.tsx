@@ -69,10 +69,10 @@ export function ItineraryTimeline({
                     </Text>
                   </Stack>
 
-                  <Stack direction="row" align="center" gap={2} className="font-mono text-sm font-bold">
-                    <Text variant="mono" size="base">{leg.from}</Text>
-                    <ArrowRight className="w-3.5 h-3.5 text-text-secondary opacity-60" />
-                    <Text variant="mono" size="base">{leg.to}</Text>
+                  <Stack direction="row" align="center" gap={2} className="font-mono text-xs font-bold flex-wrap">
+                    <Text variant="mono" size="xs">{leg.from} ({leg.flight.origin_city})</Text>
+                    <ArrowRight className="w-3 h-3 text-text-secondary opacity-60 flex-shrink-0" />
+                    <Text variant="mono" size="xs">{leg.to} ({leg.flight.destination_city})</Text>
                   </Stack>
 
                   <Stack direction="row" justify="between" align="center" className="text-xs text-text-secondary">

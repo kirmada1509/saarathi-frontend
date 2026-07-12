@@ -3,6 +3,7 @@ import type { Perturbation } from "@/core/types";
 export interface DecisionParams {
   userId: string;
   requestText: string;
+  origin?: string;
   destination?: string;
   cities?: string[];
   stayDurations?: Record<string, number>;
@@ -13,6 +14,7 @@ export interface DecisionParams {
 export interface BuildDecisionQueryInput {
   userId: string;
   requestText: string;
+  origin?: string;
   destination?: string;
   cities?: string[];
   stayDurations?: Record<string, number>;
@@ -27,6 +29,10 @@ export function buildDecisionQuery(input: BuildDecisionQueryInput): string {
   const sp = new URLSearchParams();
   sp.set("userId", input.userId);
   sp.set("requestText", input.requestText);
+
+  if (input.origin) {
+    sp.set("origin", input.origin);
+  }
 
   if (input.cities && input.cities.length > 0) {
     sp.set("cities", input.cities.join(","));
@@ -56,6 +62,7 @@ export function parseDecisionParams(
   const requestText = searchParams.get("requestText");
   if (!userId || !requestText) return null;
 
+  const origin = searchParams.get("origin") ?? undefined;
   const destination = searchParams.get("destination") ?? undefined;
   const citiesRaw = searchParams.get("cities");
   const cities = citiesRaw ? citiesRaw.split(",").filter(Boolean) : undefined;
@@ -83,7 +90,7 @@ export function parseDecisionParams(
 
   const leg = Number(searchParams.get("leg") ?? "0") || 0;
 
-  return { userId, requestText, destination, cities, stayDurations, perturbations, leg };
+  return { userId, requestText, origin, destination, cities, stayDurations, perturbations, leg };
 }
 
 export function perturbationsEqual(a: Perturbation, b: Perturbation): boolean {
