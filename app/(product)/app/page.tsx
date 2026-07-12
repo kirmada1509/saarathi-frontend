@@ -58,17 +58,28 @@ export default function ComposerPage() {
     <Stack className="relative overflow-hidden">
       <GradientMotif variant="hero" />
       <Container className="max-w-7xl py-8 md:py-12">
-        <div className="flex flex-col lg:flex-row gap-6 items-start relative select-none">
+        <div className="flex flex-col lg:flex-row gap-6 items-stretch relative select-none">
           {/* Form Column (Flex 1) */}
           <div className="flex-1 w-full min-w-0">
             <Stack gap={6}>
-              <Stack gap={2}>
-                <Text variant="display" size="3xl" weight="semibold">
-                  Plan a trip
-                </Text>
-                <Text variant="body" size="base" className="text-text-secondary">
-                  Describe your trip below. Saarathi will parse your route, analyze traveler preferences, and commit to one verdict.
-                </Text>
+              <Stack direction="row" align="center" justify="between" className="flex-wrap gap-4">
+                <Stack gap={2} className="flex-1 min-w-[280px]">
+                  <Text variant="display" size="3xl" weight="semibold">
+                    Plan a trip
+                  </Text>
+                  <Text variant="body" size="base" className="text-text-secondary">
+                    Describe your trip below. Saarathi will parse your route, analyze traveler preferences, and commit to one verdict.
+                  </Text>
+                </Stack>
+                {isCollapsed && (
+                  <Clickable
+                    onClick={() => setIsCollapsed(false)}
+                    className="border border-accent/30 bg-accent/5 text-accent hover:bg-accent/10 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-semibold transition-colors cursor-pointer self-start"
+                  >
+                    <Users className="size-4" />
+                    <span>Show Travelers</span>
+                  </Clickable>
+                )}
               </Stack>
               <RequestForm selectedUserId={selectedUserId} />
             </Stack>
@@ -78,15 +89,21 @@ export default function ComposerPage() {
           {!isCollapsed && (
             <div
               onMouseDown={startDragging}
-              className="hidden lg:block w-1 bg-border-default hover:bg-accent cursor-col-resize self-stretch transition-colors select-none group min-h-[400px]"
+              className="hidden lg:block w-2 hover:bg-accent/10 cursor-col-resize self-stretch transition-colors select-none relative group min-h-[400px]"
               title="Drag to resize sidebar"
             >
-              <div className="w-full h-full group-hover:bg-accent" />
+              {/* Center divider line */}
+              <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[1px] bg-border-default group-hover:bg-accent" />
+              {/* Visual Splitter Grabber Indicator */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-7 rounded bg-bg-surface-raised border border-border-default flex items-center justify-center gap-[2px] px-[3px] group-hover:border-accent group-hover:shadow-sm">
+                <span className="w-[1px] h-3 bg-text-secondary/40 group-hover:bg-accent/60" />
+                <span className="w-[1px] h-3 bg-text-secondary/40 group-hover:bg-accent/60" />
+              </div>
             </div>
           )}
 
           {/* Traveler Sidebar Column */}
-          {!isCollapsed ? (
+          {!isCollapsed && (
             <div 
               style={{ width: "100%" }} 
               className="lg:flex-shrink-0 lg:w-auto"
@@ -113,7 +130,7 @@ export default function ComposerPage() {
                   </Stack>
 
                   <Text variant="subtext" size="xs">
-                    Select any traveler to load their preferences and home base. Drag the divider to resize.
+                    Select any traveler to load preferences. Drag the divider to resize.
                   </Text>
                   
                   <div className="relative">
@@ -196,15 +213,6 @@ export default function ComposerPage() {
                 </div>
               </Card>
             </div>
-          ) : (
-            /* Floating action button when collapsed */
-            <Clickable
-              onClick={() => setIsCollapsed(false)}
-              className="lg:fixed lg:right-6 lg:bottom-20 shadow-lg rounded-full px-4 py-2.5 bg-accent text-text-on-accent hover:bg-accent-hover transition-all flex items-center gap-2 z-50 cursor-pointer border border-accent/20"
-            >
-              <Users className="size-4" />
-              <span className="text-sm font-semibold">Show Travelers</span>
-            </Clickable>
           )}
         </div>
       </Container>
