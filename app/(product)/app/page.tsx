@@ -15,13 +15,7 @@ export default function ComposerPage() {
               Pick a traveler, describe the trip, and Saarathi will commit to one verdict —
               not a ranked list — and show its work.
             </Text>
-            <Text variant="subtext" size="xs">
-              Planning more than one stop?{" "}
-              <NavLink href="/app/multi-city" active={false} className="underline text-accent hover:text-accent-hover">
-                Use the multi-city composer
-              </NavLink>
-              .
-            </Text>
+
           </Stack>
 
           <RequestForm />
