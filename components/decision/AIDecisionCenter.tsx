@@ -13,28 +13,10 @@ import type { InferredPreference, Confidence, EvidenceItem, Counterfactual, Pert
 type TabId = "why" | "profile" | "tradeoffs" | "sensitivity";
 
 const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
-  { id: "why", label: "Why this itinerary", icon: <Sparkles className="w-3.5 h-3.5" /> },
   { id: "profile", label: "Preference profile", icon: <Scale className="w-3.5 h-3.5" /> },
   { id: "tradeoffs", label: "Trade-offs", icon: <BarChart3 className="w-3.5 h-3.5" /> },
   { id: "sensitivity", label: "Sensitivity", icon: <ToggleRight className="w-3.5 h-3.5" /> },
 ];
-
-function WhyTab({ explanation }: { explanation: string }) {
-  return (
-    <Stack gap={4}>
-      <Stack className="prose max-w-none" gap={0}>
-        <Text
-          variant="body"
-          size="base"
-          className="text-text-primary/90 leading-relaxed whitespace-pre-wrap"
-          style={{ fontFamily: "var(--font-sans)" }}
-        >
-          {explanation}
-        </Text>
-      </Stack>
-    </Stack>
-  );
-}
 
 function ProfileTab({
   preference,
@@ -53,7 +35,7 @@ function ProfileTab({
           <Text variant="heading" size="xs" className="text-text-secondary uppercase tracking-wider font-semibold">
             Dimension weights
           </Text>
-          <PreferenceRadar preference={preference} className="h-[200px] w-full" />
+          <PreferenceRadar preference={preference} className="h-50 w-full" />
           <Stack gap={2} className="border-t border-border-default pt-3">
             <Stack direction="row" justify="between" gap={0}>
               <Text variant="subtext" size="xs">Cost weight</Text>
@@ -311,7 +293,7 @@ export function AIDecisionCenter({
   onToggle,
   onClear,
 }: AIDecisionCenterProps) {
-  const [activeTab, setActiveTab] = useState<TabId>("why");
+  const [activeTab, setActiveTab] = useState<TabId>("profile");
 
   const verdictBreakdown = activeResponse.verdict?.breakdown;
 
@@ -323,7 +305,7 @@ export function AIDecisionCenter({
           <Stack direction="row" align="center" gap={2}>
             <Sparkles className="w-5 h-5 text-accent" />
             <Text as="h2" variant="heading" size="lg" className="text-text-primary font-bold" style={{ fontFamily: "var(--font-display)" }}>
-              AI Decision Center
+              Analysis & Trade-offs
             </Text>
           </Stack>
           <Text variant="subtext" size="sm">
@@ -368,9 +350,6 @@ export function AIDecisionCenter({
               exit={{ opacity: 0 }}
               transition={{ duration: 0.18 }}
             >
-              {activeTab === "why" && (
-                <WhyTab explanation={activeResponse.explanation} />
-              )}
               {activeTab === "profile" && (
                 <ProfileTab preference={activeResponse.preference} confidence={activeResponse.confidence} />
               )}

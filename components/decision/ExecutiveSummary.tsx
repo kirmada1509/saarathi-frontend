@@ -49,6 +49,16 @@ export function ExecutiveSummary({ response, activeResponse, isLoading, user, on
   const mode = response?.mode;
   const itinerary = response?.itinerary;
 
+  const airports = itinerary
+    ? itinerary.legs.reduce((acc: string[], leg) => {
+        if (acc.length === 0) {
+          acc.push(leg.from);
+        }
+        acc.push(leg.to);
+        return acc;
+      }, [])
+    : [];
+
   // Savings vs next-best
   const runnerUp: ScoredFlight | undefined = ranked.find((f) => f.flight_id !== verdict.flight_id);
   const savingsVsNext = runnerUp ? runnerUp.price - verdict.price : null;
@@ -335,33 +345,6 @@ export function ExecutiveSummary({ response, activeResponse, isLoading, user, on
                   </Stack>
                 </Stack>
 
-                {/* Multi-city itinerary summary */}
-                {mode === "multi-city" && itinerary && (
-                  <Stack className="w-full border border-border-default rounded-2xl p-5 bg-bg-surface-raised/30" gap={3}>
-                    <Text variant="heading" size="xs" className="text-text-secondary uppercase tracking-wider font-semibold">
-                      Full routing ({itinerary.legs.length} legs)
-                    </Text>
-                    <Stack gap={2}>
-                      {itinerary.legs.map((leg, i) => (
-                        <Stack key={leg.flight.flight_id} direction="row" align="center" gap={2}>
-                          <Text variant="mono" size="xs" className="text-text-secondary w-4">{i + 1}.</Text>
-                          <Text variant="mono" size="xs" weight="bold">{leg.from}</Text>
-                          <span className="text-text-secondary">→</span>
-                          <Text variant="mono" size="xs" weight="bold">{leg.to}</Text>
-                          <Text variant="mono" size="xs" className="text-text-secondary ml-auto">
-                            {fmt(leg.flight.price, leg.flight.currency)}
-                          </Text>
-                        </Stack>
-                      ))}
-                      <Stack className="border-t border-border-default pt-2 mt-1" direction="row" justify="between" align="center" gap={0}>
-                        <Text variant="subtext" size="xs" className="font-semibold">Total</Text>
-                        <Text variant="mono" size="sm" weight="bold" className="text-accent">
-                          {fmt(itinerary.totalPrice)}
-                        </Text>
-                      </Stack>
-                    </Stack>
-                  </Stack>
-                )}
               </Stack>
             </Stack>
           </Stack>

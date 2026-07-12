@@ -201,7 +201,7 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
                         </Stack>
 
                         {/* Stays Counter adjusters */}
-                        <Stack direction="row" align="center" gap={3} className="shrink-0 self-start sm:self-center">
+                        <Stack direction="col" align="center" gap={3} className="shrink-0 self-start sm:self-center">
                           <Stack direction="row" align="center" gap={1} className="bg-bg-surface-raised p-1 rounded-md border border-border-default/60 shadow-inner">
                             <Button
                               type="button"
@@ -239,8 +239,8 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
                             {(inferredStayDurations[code] ?? 2) === 0
                               ? "same day departure"
                               : (inferredStayDurations[code] ?? 2) === 1
-                              ? "night"
-                              : "nights"}
+                              ? `${inferredStayDurations[code] ?? 2} night`
+                              : `${inferredStayDurations[code] ?? 2} nights`}
                           </Text>
                         </Stack>
                       </Stack>

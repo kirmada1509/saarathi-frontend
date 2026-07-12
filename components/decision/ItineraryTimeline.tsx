@@ -53,7 +53,7 @@ export function ItineraryTimeline({
               <Clickable
                 key={leg.flight.flight_id}
                 onClick={() => onSelectLeg(index)}
-                className={`flex-1 min-w-[200px] text-left p-4 rounded-md border transition-all cursor-pointer focus:outline-none relative ${
+                className={`flex-1 min-w-50 text-left p-4 rounded-md border transition-all cursor-pointer focus:outline-none relative ${
                   isActive
                     ? "bg-accent/10 border-accent shadow-sm"
                     : "bg-bg-surface-raised/30 border-border-default hover:border-accent/50"
@@ -71,7 +71,7 @@ export function ItineraryTimeline({
 
                   <Stack direction="row" align="center" gap={2} className="font-mono text-xs font-bold flex-wrap">
                     <Text variant="mono" size="xs">{leg.from} ({leg.flight.origin_city})</Text>
-                    <ArrowRight className="w-3 h-3 text-text-secondary opacity-60 flex-shrink-0" />
+                    <ArrowRight className="w-3 h-3 text-text-secondary opacity-60 shrink-0" />
                     <Text variant="mono" size="xs">{leg.to} ({leg.flight.destination_city})</Text>
                   </Stack>
 

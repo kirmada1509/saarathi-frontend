@@ -177,6 +177,21 @@ export function DecisionScreen() {
           )}
 
           {/* ─────────────────────────────────────────────
+              SECTION 2: Interactive Journey Timeline (Moved to top for Multi-City)
+          ───────────────────────────────────────────── */}
+          {isMultiCity && response?.itinerary && (
+            <section ref={journeyRef}>
+              <JourneyTimeline
+                response={response}
+                activeResponse={activeResponse}
+                selectedLegIndex={legIndex}
+                onSelectLeg={handleSelectLeg}
+                legLoading={legLoading}
+              />
+            </section>
+          )}
+
+          {/* ─────────────────────────────────────────────
               SECTION 1: Executive Summary (Hero)
           ───────────────────────────────────────────── */}
           <section ref={summaryRef}>
@@ -188,21 +203,6 @@ export function DecisionScreen() {
               onScrollToAlternatives={() => handleScrollToSection("alternatives")}
             />
           </section>
-
-          {/* ─────────────────────────────────────────────
-              SECTION 2: Interactive Journey Timeline
-          ───────────────────────────────────────────── */}
-          {(activeResponse?.verdict || response?.itinerary) && (
-            <section ref={journeyRef}>
-              <JourneyTimeline
-                response={response}
-                activeResponse={activeResponse}
-                selectedLegIndex={legIndex}
-                onSelectLeg={handleSelectLeg}
-                legLoading={legLoading}
-              />
-            </section>
-          )}
 
           {/* ─────────────────────────────────────────────
               SECTION 3: AI Decision Center (tabbed)
