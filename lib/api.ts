@@ -7,6 +7,7 @@ export interface RecommendPayload {
   requestText: string;
   destination?: string;
   cities?: string[];
+  stayDurations?: Record<string, number>;
   origin?: string;
   perturbations: Perturbation[];
 }

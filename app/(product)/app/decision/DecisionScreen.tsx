@@ -35,6 +35,7 @@ export function DecisionScreen() {
           requestText: params.requestText,
           destination: params.destination,
           cities: params.cities,
+          stayDurations: params.stayDurations,
           perturbations: params.perturbations,
         }
       : null

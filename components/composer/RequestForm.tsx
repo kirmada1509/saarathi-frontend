@@ -21,6 +21,7 @@ export function RequestForm() {
   const [requestText, setRequestText] = React.useState("");
   const [destination, setDestination] = React.useState("");
   const [cities, setCities] = React.useState<string[]>([]);
+  const [stayDurations, setStayDurations] = React.useState<Record<string, number>>({});
   const [overrideRoute, setOverrideRoute] = React.useState(false);
   const [routeMode, setRouteMode] = React.useState<"single" | "multi">("single");
   const [showAdvanced, setShowAdvanced] = React.useState(false);
@@ -31,6 +32,7 @@ export function RequestForm() {
     const seed = getBenchmarkQuery(id);
     setRequestText(seed.requestText);
     setError(null);
+    setStayDurations({});
 
     // Pre-populate manual controls for fallback/override
     if (seed.cities.length > 0) {
@@ -57,6 +59,7 @@ export function RequestForm() {
 
     let resolvedDestination: string | undefined = undefined;
     let resolvedCities: string[] | undefined = undefined;
+    let resolvedStayDurations: Record<string, number> | undefined = undefined;
 
     if (overrideRoute) {
       if (routeMode === "single") {
@@ -71,6 +74,7 @@ export function RequestForm() {
           return;
         }
         resolvedCities = cities;
+        resolvedStayDurations = stayDurations;
       }
     } else {
       // If it matches the traveler default benchmark query, use its seed destination/cities
@@ -87,6 +91,7 @@ export function RequestForm() {
       requestText,
       destination: resolvedDestination,
       cities: resolvedCities,
+      stayDurations: resolvedStayDurations,
     });
     router.push(`/app/decision?${query}`);
   }
@@ -103,13 +108,13 @@ export function RequestForm() {
           {/* Trip Description Textarea */}
           <Field
             label="Describe your trip"
-            hint="Describe your destinations, dates, and preferences. Saarathi will automatically infer your route and preferences."
+            hint="Describe your destinations, dates, and preferences. Saarathi will automatically infer your route, stays, and preferences."
           >
             <Textarea
               value={requestText}
               onChange={(e) => setRequestText(e.target.value)}
               rows={4}
-              placeholder="e.g. I need to get to New York for a Tuesday meeting and return by Thursday."
+              placeholder="e.g. I want to visit London for 3 days, Paris for 2 days, and Rome for 4 nights."
             />
           </Field>
 
@@ -172,8 +177,13 @@ export function RequestForm() {
                         />
                       </Field>
                     ) : (
-                      <Field label="City sequence" hint="Order matters — this is the exact routing order.">
-                        <CityChainBuilder cities={cities} onChange={setCities} />
+                      <Field label="City sequence" hint="Order matters — specify nights to stay at each destination.">
+                        <CityChainBuilder
+                          cities={cities}
+                          onChange={setCities}
+                          stayDurations={stayDurations}
+                          onStayDurationsChange={setStayDurations}
+                        />
                       </Field>
                     )}
                   </Stack>

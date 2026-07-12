@@ -5,6 +5,7 @@ export interface DecisionParams {
   requestText: string;
   destination?: string;
   cities?: string[];
+  stayDurations?: Record<string, number>;
   perturbations: Perturbation[];
   leg: number;
 }
@@ -14,6 +15,7 @@ export interface BuildDecisionQueryInput {
   requestText: string;
   destination?: string;
   cities?: string[];
+  stayDurations?: Record<string, number>;
   perturbations?: Perturbation[];
   leg?: number;
 }
@@ -30,6 +32,10 @@ export function buildDecisionQuery(input: BuildDecisionQueryInput): string {
     sp.set("cities", input.cities.join(","));
   } else if (input.destination) {
     sp.set("destination", input.destination);
+  }
+
+  if (input.stayDurations && Object.keys(input.stayDurations).length > 0) {
+    sp.set("stayDurations", JSON.stringify(input.stayDurations));
   }
 
   if (input.perturbations && input.perturbations.length > 0) {
@@ -54,6 +60,16 @@ export function parseDecisionParams(
   const citiesRaw = searchParams.get("cities");
   const cities = citiesRaw ? citiesRaw.split(",").filter(Boolean) : undefined;
 
+  let stayDurations: Record<string, number> | undefined = undefined;
+  const stayRaw = searchParams.get("stayDurations");
+  if (stayRaw) {
+    try {
+      stayDurations = JSON.parse(stayRaw);
+    } catch {
+      stayDurations = undefined;
+    }
+  }
+
   let perturbations: Perturbation[] = [];
   const ptsRaw = searchParams.get("pts");
   if (ptsRaw) {
@@ -67,7 +83,7 @@ export function parseDecisionParams(
 
   const leg = Number(searchParams.get("leg") ?? "0") || 0;
 
-  return { userId, requestText, destination, cities, perturbations, leg };
+  return { userId, requestText, destination, cities, stayDurations, perturbations, leg };
 }
 
 export function perturbationsEqual(a: Perturbation, b: Perturbation): boolean {

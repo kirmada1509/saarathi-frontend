@@ -18,6 +18,7 @@ export interface RecommendationParams {
   requestText: string;
   destination?: string;
   cities?: string[];
+  stayDurations?: Record<string, number>;
   perturbations?: Perturbation[];
 }
 
@@ -28,6 +29,7 @@ function recommendationKey(params: RecommendationParams) {
     params.requestText,
     params.destination ?? "",
     (params.cities ?? []).join(","),
+    JSON.stringify(params.stayDurations ?? {}),
     JSON.stringify(params.perturbations ?? []),
   ] as const;
 }
@@ -46,6 +48,7 @@ export function useRecommendation(
         userId: p.userId,
         requestText: p.requestText,
         perturbations: p.perturbations ?? [],
+        stayDurations: p.stayDurations,
       };
       if (p.cities && p.cities.length > 0) {
         payload.cities = p.cities;
