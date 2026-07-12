@@ -105,12 +105,11 @@ export default function ComposerPage() {
           {/* Traveler Sidebar Column */}
           {!isCollapsed && (
             <div 
-              style={{ width: "100%" }} 
-              className="lg:flex-shrink-0 lg:w-auto"
+              style={{ width: isLargeScreen ? `${width}px` : "100%" }} 
+              className="w-full lg:w-auto lg:flex-shrink-0"
             >
               <Card 
-                style={{ width: isLargeScreen ? `${width}px` : "100%" }}
-                className="bg-bg-surface border-border-default h-full max-h-[720px] flex flex-col lg:min-w-[280px]"
+                className="bg-bg-surface border-border-default h-full max-h-[720px] flex flex-col lg:min-w-[280px] w-full"
               >
                 <Stack gap={4} className="p-5 border-b border-border-default">
                   <Stack direction="row" align="center" justify="between">
