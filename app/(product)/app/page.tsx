@@ -8,37 +8,30 @@ import { getBenchmarkQuery } from "@/lib/benchmark-queries";
 import { Check, Search, Users, ChevronRight } from "lucide-react";
 
 export default function ComposerPage() {
-  const [selectedUserId, setSelectedUserId] = React.useState("U01");
+  // Lazy initializers — read from browser APIs once, no setState-in-effect
+  const [selectedUserId, setSelectedUserId] = React.useState(() => {
+    if (typeof window === "undefined") return "U01";
+    return localStorage.getItem("saarathi_selected_user_id") ?? "U01";
+  });
   const [searchQuery, setSearchQuery] = React.useState("");
   const [width, setWidth] = React.useState(360);
   const [isCollapsed, setIsCollapsed] = React.useState(false);
-  const [isLargeScreen, setIsLargeScreen] = React.useState(false);
-  
+  const [isLargeScreen, setIsLargeScreen] = React.useState(() =>
+    typeof window !== "undefined" ? window.innerWidth >= 1024 : false
+  );
+
   const { data: users = [], isLoading } = useUsers();
 
+  // Keep isLargeScreen in sync with viewport changes
   React.useEffect(() => {
-    setIsLargeScreen(window.innerWidth >= 1024);
     const handleResize = () => setIsLargeScreen(window.innerWidth >= 1024);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const isLoadedRef = React.useRef(false);
-
-  // Load saved traveler ID
+  // Persist traveler selection
   React.useEffect(() => {
-    const saved = localStorage.getItem("saarathi_selected_user_id");
-    if (saved) {
-      setSelectedUserId(saved);
-    }
-    isLoadedRef.current = true;
-  }, []);
-
-  // Save traveler ID on change
-  React.useEffect(() => {
-    if (isLoadedRef.current && selectedUserId) {
-      localStorage.setItem("saarathi_selected_user_id", selectedUserId);
-    }
+    localStorage.setItem("saarathi_selected_user_id", selectedUserId);
   }, [selectedUserId]);
 
   const startDragging = React.useCallback((e: React.MouseEvent) => {
@@ -76,9 +69,9 @@ export default function ComposerPage() {
     <Stack className="relative overflow-hidden">
       <GradientMotif variant="hero" />
       <Container className="max-w-7xl py-8 md:py-12">
-        <div className="flex flex-col lg:flex-row gap-6 items-stretch relative select-none">
+        <Stack direction="row" className="flex-col lg:flex-row gap-6 items-stretch relative select-none">
           {/* Form Column (Flex 1) */}
-          <div className="flex-1 w-full min-w-0">
+          <Stack className="flex-1 w-full min-w-0">
             <Stack gap={6}>
               <Stack direction="row" align="center" justify="between" className="flex-wrap gap-4">
                 <Stack gap={2} className="flex-1 min-w-[280px]">
@@ -101,29 +94,29 @@ export default function ComposerPage() {
               </Stack>
               <RequestForm selectedUserId={selectedUserId} />
             </Stack>
-          </div>
+          </Stack>
 
           {/* Draggable Divider Handle */}
           {!isCollapsed && (
-            <div
+            <Stack
               onMouseDown={startDragging}
               className="hidden lg:block w-2 hover:bg-accent/10 cursor-col-resize self-stretch transition-colors select-none relative group min-h-[400px]"
               title="Drag to resize sidebar"
             >
               {/* Center divider line */}
-              <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[1px] bg-border-default group-hover:bg-accent" />
+              <Stack className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[1px] bg-border-default group-hover:bg-accent" />
               {/* Visual Splitter Grabber Indicator */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-7 rounded bg-bg-surface-raised border border-border-default flex items-center justify-center gap-[2px] px-[3px] group-hover:border-accent group-hover:shadow-sm">
+              <Stack className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-7 rounded bg-bg-surface-raised border border-border-default flex items-center justify-center gap-[2px] px-[3px] group-hover:border-accent group-hover:shadow-sm">
                 <span className="w-[1px] h-3 bg-text-secondary/40 group-hover:bg-accent/60" />
                 <span className="w-[1px] h-3 bg-text-secondary/40 group-hover:bg-accent/60" />
-              </div>
-            </div>
+              </Stack>
+            </Stack>
           )}
 
           {/* Traveler Sidebar Column */}
           {!isCollapsed && (
-            <div 
-              style={{ width: isLargeScreen ? `${width}px` : "100%" }} 
+            <Stack
+              style={{ width: isLargeScreen ? `${width}px` : "100%" }}
               className="w-full lg:w-auto lg:flex-shrink-0"
             >
               <Card 
@@ -150,7 +143,7 @@ export default function ComposerPage() {
                     Select any traveler to load preferences. Drag the divider to resize.
                   </Text>
                   
-                  <div className="relative">
+                  <Stack className="relative">
                     <input
                       type="text"
                       placeholder="Filter by ID, city, or cabin..."
@@ -159,22 +152,22 @@ export default function ComposerPage() {
                       className="w-full pl-8 pr-3 py-1.5 rounded-md border border-border-default bg-bg-base text-xs text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-1 focus:ring-accent"
                     />
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-text-secondary" />
-                  </div>
+                  </Stack>
                 </Stack>
 
-                <div className="flex-1 overflow-y-auto p-5 pt-3">
+                <Stack className="flex-1 overflow-y-auto p-5 pt-3">
                   {isLoading ? (
-                    <div className="grid gap-3 grid-cols-[repeat(auto-fill,minmax(200px,1fr))]">
+                    <Stack className="grid gap-3 grid-cols-[repeat(auto-fill,minmax(200px,1fr))]">
                       {Array.from({ length: 6 }).map((_, i) => (
                         <Skeleton key={i} className="h-32 w-full" />
                       ))}
-                    </div>
+                    </Stack>
                   ) : filteredUsers.length === 0 ? (
                     <Text variant="subtext" className="text-center py-8">
                       No matching travelers found.
                     </Text>
                   ) : (
-                    <div className="grid gap-3 grid-cols-[repeat(auto-fill,minmax(200px,1fr))]">
+                    <Stack className="grid gap-3 grid-cols-[repeat(auto-fill,minmax(200px,1fr))]">
                       {filteredUsers.map((u) => {
                         const isSelected = u.user_id === selectedUserId;
                         const seed = getBenchmarkQuery(u.user_id);
@@ -210,14 +203,14 @@ export default function ComposerPage() {
                                   Age {u.age} · {u.preferred_cabin}
                                 </Text>
                               </Stack>
-                              <div className="flex flex-wrap gap-1 mt-1 text-[10px]">
+                              <Stack className="flex flex-wrap gap-1 mt-1 text-[10px]">
                                 <span className="bg-bg-base border border-border-default px-1.5 py-0.5 rounded text-text-secondary">
                                   Price: {u.price_sensitivity}
                                 </span>
                                 <span className="bg-bg-base border border-border-default px-1.5 py-0.5 rounded text-text-secondary">
                                   Direct: {u.direct_preference}
                                 </span>
-                              </div>
+                              </Stack>
                               <Text variant="subtext" size="xs" className="italic text-text-secondary/80 line-clamp-2 border-t border-border-default/40 pt-2 mt-1">
                                 &ldquo;{displayQuery}&rdquo;
                               </Text>
@@ -225,13 +218,13 @@ export default function ComposerPage() {
                           </Clickable>
                         );
                       })}
-                    </div>
+                    </Stack>
                   )}
-                </div>
+                </Stack>
               </Card>
-            </div>
+            </Stack>
           )}
-        </div>
+        </Stack>
       </Container>
     </Stack>
   );

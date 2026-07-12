@@ -151,22 +151,25 @@ export function VerdictCard({
                 <Text variant="heading" size="xs" className="text-text-secondary font-semibold uppercase tracking-wider">
                   Summary
                 </Text>
-                <div className="text-sm space-y-2 text-text-primary">
-                  <div>
-                    <span className="font-semibold text-text-secondary">Route:</span> {verdict.origin} → {verdict.destination}
-                  </div>
-                  <div>
-                    <span className="font-semibold text-text-secondary">Duration:</span> {durationStr}
-                  </div>
-                  <div>
-                    <span className="font-semibold text-text-secondary">Price:</span> {formattedPrice} total
-                  </div>
+                <Stack gap={2} className="text-sm text-text-primary">
+                  <Stack direction="row" gap={1} align="center">
+                    <Text variant="subtext" size="sm" className="font-semibold text-text-secondary">Route:</Text>
+                    <Text variant="mono" size="sm">{verdict.origin} → {verdict.destination}</Text>
+                  </Stack>
+                  <Stack direction="row" gap={1} align="center">
+                    <Text variant="subtext" size="sm" className="font-semibold text-text-secondary">Duration:</Text>
+                    <Text variant="body" size="sm">{durationStr}</Text>
+                  </Stack>
+                  <Stack direction="row" gap={1} align="center">
+                    <Text variant="subtext" size="sm" className="font-semibold text-text-secondary">Price:</Text>
+                    <Text variant="body" size="sm">{formattedPrice} total</Text>
+                  </Stack>
                   {mode === "multi-city" && (
-                    <div className="text-xs text-text-secondary border-t border-border-default/60 pt-2 mt-2">
-                      Hop: {verdict.origin} to {verdict.destination}
-                    </div>
+                    <Stack className="text-xs text-text-secondary border-t border-border-default/60 pt-2 mt-2">
+                      <Text variant="subtext" size="xs">Hop: {verdict.origin} to {verdict.destination}</Text>
+                    </Stack>
                   )}
-                </div>
+                </Stack>
               </Stack>
             </Stack>
 

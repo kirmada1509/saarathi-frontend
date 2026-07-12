@@ -156,11 +156,11 @@ export function DecisionScreen() {
                         AI Rationale & Explanation
                       </Text>
                     </Stack>
-                    <div className="prose dark:prose-invert max-w-none">
+                    <Stack className="prose dark:prose-invert max-w-none">
                       <Text variant="body" size="sm" className="leading-relaxed text-text-primary/95 whitespace-pre-wrap">
                         {activeResponse.explanation}
                       </Text>
-                    </div>
+                    </Stack>
                   </Stack>
                 </Card>
 
@@ -186,9 +186,9 @@ export function DecisionScreen() {
                       <Text variant="heading" size="sm" className="px-4 pt-3 font-semibold text-text-primary">
                         Route Trajectory Map
                       </Text>
-                      <div className="flex-1 rounded-b-lg overflow-hidden border-t border-border-default">
+                      <Stack className="flex-1 rounded-b-lg overflow-hidden border-t border-border-default">
                         <RouteMap legs={mapLegs} className="h-full w-full" />
-                      </div>
+                      </Stack>
                     </Stack>
                   </Card>
                 )}

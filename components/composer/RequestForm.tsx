@@ -30,28 +30,32 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
 
   // Sync state whenever selectedUserId is changed from the parent sidebar
   React.useEffect(() => {
-    if (selectedUserId) {
-      const seed = getBenchmarkQuery(selectedUserId);
+    if (!selectedUserId) return;
+
+    const seed = getBenchmarkQuery(selectedUserId);
+    const savedText = localStorage.getItem(`saarathi_request_text_${selectedUserId}`);
+
+    let next: string;
+    if (savedText) {
+      next = savedText;
+    } else if (seed.requestText !== "Find me flights.") {
+      next = seed.requestText;
+    } else {
+      const activeUserObj = users.find((u) => u.user_id === selectedUserId);
+      next = activeUserObj
+        ? `I want to find a flight from ${activeUserObj.home_airport} to `
+        : "Find me flights.";
+    }
+
+    // Batch all state updates in a microtask so they are treated as
+    // external-system synchronisation, not synchronous setState in an effect
+    const tid = setTimeout(() => {
       setError(null);
       setShowStaysConfirmation(false);
-
-      const savedText = localStorage.getItem(`saarathi_request_text_${selectedUserId}`);
-      if (savedText) {
-        setRequestText(savedText);
-      } else {
-        if (seed.requestText !== "Find me flights.") {
-          setRequestText(seed.requestText);
-        } else {
-          const activeUserObj = users.find((u) => u.user_id === selectedUserId);
-          if (activeUserObj) {
-            setRequestText(`I want to find a flight from ${activeUserObj.home_airport} to `);
-          } else {
-            setRequestText("Find me flights.");
-          }
-        }
-      }
+      setRequestText(next);
       loadedForUserRef.current = selectedUserId;
-    }
+    }, 0);
+    return () => clearTimeout(tid);
   }, [selectedUserId, users]);
 
   // Persist requestText changes to localStorage
@@ -135,18 +139,20 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
 
           {/* Active Traveler Summary */}
           {activeUser && (
-            <div className="bg-bg-surface-raised/40 p-3 rounded border border-border-default text-xs text-text-secondary">
-              Traveler Profile: <strong className="text-text-primary">{activeUser.user_id}</strong> · Home Base: <strong className="text-text-primary">{activeUser.home_city} ({activeUser.home_airport})</strong>
-            </div>
+            <Stack className="bg-bg-surface-raised/40 p-3 rounded border border-border-default text-xs text-text-secondary">
+              <Text variant="subtext" size="xs">
+                Traveler Profile: <strong className="text-text-primary">{activeUser.user_id}</strong> · Home Base: <strong className="text-text-primary">{activeUser.home_city} ({activeUser.home_airport})</strong>
+              </Text>
+            </Stack>
           )}
           {/* Journey Sequence */}
           <Stack gap={4} className="border border-border-default rounded-lg p-4 bg-bg-surface-raised/20 relative">
             
             {/* Start Airport */}
             <Stack direction="row" align="center" gap={3} className="border-b border-border-default pb-3 bg-bg-surface/40 p-2.5 rounded-md">
-              <div className="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center border border-accent">
-                <div className="w-2.5 h-2.5 rounded-full bg-accent" />
-              </div>
+              <Stack className="w-6 h-6 rounded-full bg-accent/20 items-center justify-center border border-accent">
+                <Stack className="w-2.5 h-2.5 rounded-full bg-accent" />
+              </Stack>
               <Stack gap={1}>
                 <Text variant="subtext" size="xs" className="uppercase tracking-wider font-bold text-accent">Start Base</Text>
                 <Text variant="mono" size="sm" weight="bold" className="text-text-primary">
@@ -179,8 +185,9 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
 
                   <Stack direction="row" align="center" gap={2}>
                     {/* Minus button */}
-                    <button
+                    <Button
                       type="button"
+                      variant="outline"
                       onClick={() => {
                         const current = inferredStayDurations[code] ?? 2;
                         setInferredStayDurations({
@@ -188,10 +195,10 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
                           [code]: Math.max(0, current - 1),
                         });
                       }}
-                      className="w-7 h-7 flex items-center justify-center rounded-md border border-border-default bg-bg-surface text-text-primary hover:bg-bg-surface-raised hover:border-accent text-sm font-bold transition-all focus:outline-none select-none active:scale-95 cursor-pointer"
+                      className="w-7 h-7 p-0 items-center justify-center rounded-md border border-border-default bg-bg-surface text-text-primary hover:bg-bg-surface-raised hover:border-accent text-sm font-bold transition-all focus:outline-none select-none active:scale-95 cursor-pointer"
                     >
                       -
-                    </button>
+                    </Button>
 
                     {/* Value display */}
                     <span className="w-8 text-center text-sm font-mono font-bold text-text-primary select-none">
@@ -199,8 +206,9 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
                     </span>
 
                     {/* Plus button */}
-                    <button
+                    <Button
                       type="button"
+                      variant="outline"
                       onClick={() => {
                         const current = inferredStayDurations[code] ?? 2;
                         setInferredStayDurations({
@@ -208,10 +216,10 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
                           [code]: Math.min(30, current + 1),
                         });
                       }}
-                      className="w-7 h-7 flex items-center justify-center rounded-md border border-border-default bg-bg-surface text-text-primary hover:bg-bg-surface-raised hover:border-accent text-sm font-bold transition-all focus:outline-none select-none active:scale-95 cursor-pointer"
+                      className="w-7 h-7 p-0 items-center justify-center rounded-md border border-border-default bg-bg-surface text-text-primary hover:bg-bg-surface-raised hover:border-accent text-sm font-bold transition-all focus:outline-none select-none active:scale-95 cursor-pointer"
                     >
                       +
-                    </button>
+                    </Button>
 
                     <Text variant="subtext" size="xs" className="ml-2 w-28 text-left select-none text-text-secondary">
                       {(inferredStayDurations[code] ?? 2) === 0
@@ -227,9 +235,9 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
 
             {/* End Airport */}
             <Stack direction="row" align="center" gap={3} className="border-t border-border-default pt-3 bg-bg-surface/40 p-2.5 rounded-md mt-1">
-              <div className="w-6 h-6 rounded-full bg-border-default/40 flex items-center justify-center border border-border-default">
-                <div className="w-2.5 h-2.5 rounded-full bg-text-secondary" />
-              </div>
+              <Stack className="w-6 h-6 rounded-full bg-border-default/40 items-center justify-center border border-border-default">
+                <Stack className="w-2.5 h-2.5 rounded-full bg-text-secondary" />
+              </Stack>
               <Stack gap={1}>
                 <Text variant="subtext" size="xs" className="uppercase tracking-wider font-bold text-text-secondary">Return Base</Text>
                 <Text variant="mono" size="sm" weight="bold" className="text-text-primary">
@@ -287,7 +295,7 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
                   Age {activeUser.age} · Home: {activeUser.home_city} ({activeUser.home_airport})
                 </Text>
               </Stack>
-              <div className="flex flex-wrap gap-2 text-[11px] border-t border-border-default/40 pt-2.5 mt-1">
+              <Stack className="flex flex-wrap gap-2 text-[11px] border-t border-border-default/40 pt-2.5 mt-1">
                 <span className="bg-bg-base border border-border-default px-2 py-0.5 rounded text-text-secondary">
                   Cabin: <strong className="text-text-primary">{activeUser.preferred_cabin}</strong>
                 </span>
@@ -302,7 +310,7 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
                     Airlines: <strong className="text-text-primary">{activeUser.preferred_airlines.replace(/;/g, ", ")}</strong>
                   </span>
                 )}
-              </div>
+              </Stack>
             </Stack>
           )}
 
