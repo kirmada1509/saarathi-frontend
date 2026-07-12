@@ -136,49 +136,105 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
               Traveler Profile: <strong className="text-text-primary">{activeUser.user_id}</strong> · Home Base: <strong className="text-text-primary">{activeUser.home_city} ({activeUser.home_airport})</strong>
             </div>
           )}
-
-          {/* City sequence list */}
-          <Stack gap={3} className="border border-border-default rounded-lg p-4 bg-bg-surface-raised/20">
-            {inferredCities.map((code, index) => (
-              <Stack
-                key={`${code}-${index}`}
-                direction="row"
-                align="center"
-                justify="between"
-                className="border border-border-default rounded-md px-3 py-2 bg-bg-surface"
-              >
-                <Stack direction="row" align="center" gap={3}>
-                  <Badge variant="default">{index + 1}</Badge>
-                  <Text variant="mono" size="sm" weight="bold">
-                    {code} {placeNames[code] ? `(${placeNames[code]})` : ""}
-                  </Text>
-                </Stack>
-
-                <Stack direction="row" align="center" gap={2}>
-                  <input
-                    type="number"
-                    min={0}
-                    max={30}
-                    value={inferredStayDurations[code] ?? 2}
-                    onChange={(e) => {
-                      const val = parseInt(e.target.value, 10) || 0;
-                      setInferredStayDurations({
-                        ...inferredStayDurations,
-                        [code]: Math.max(0, val),
-                      });
-                    }}
-                    className="w-12 h-7 rounded border border-border-default bg-bg-base text-center text-xs text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
-                  />
-                  <Text variant="subtext" size="xs">
-                    {(inferredStayDurations[code] ?? 2) === 0
-                      ? "same day departure"
-                      : (inferredStayDurations[code] ?? 2) === 1
-                      ? "night"
-                      : "nights"}
-                  </Text>
-                </Stack>
+          {/* Journey Sequence */}
+          <Stack gap={4} className="border border-border-default rounded-lg p-4 bg-bg-surface-raised/20 relative">
+            
+            {/* Start Airport */}
+            <Stack direction="row" align="center" gap={3} className="border-b border-border-default pb-3 bg-bg-surface/40 p-2.5 rounded-md">
+              <div className="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center border border-accent">
+                <div className="w-2.5 h-2.5 rounded-full bg-accent" />
+              </div>
+              <Stack gap={1}>
+                <Text variant="subtext" size="xs" className="uppercase tracking-wider font-bold text-accent">Start Base</Text>
+                <Text variant="mono" size="sm" weight="bold" className="text-text-primary">
+                  {activeUser?.home_airport} {activeUser?.home_city ? `(${activeUser.home_city})` : ""}
+                </Text>
               </Stack>
-            ))}
+            </Stack>
+
+            {/* Intermediate Stays */}
+            <Stack gap={3} className="py-1">
+              <Text variant="subtext" size="xs" className="uppercase tracking-wider font-bold text-text-secondary pl-1">
+                Intermediate Stays
+              </Text>
+              {inferredCities.map((code, index) => (
+                <Stack
+                  key={`${code}-${index}`}
+                  direction="row"
+                  align="center"
+                  justify="between"
+                  className="border border-border-default rounded-md px-3 py-2 bg-bg-surface hover:border-accent/40 transition-colors"
+                >
+                  <Stack direction="row" align="center" gap={3}>
+                    <Badge variant="default" className="bg-bg-surface-raised border border-border-default text-text-primary font-bold">
+                      Stop {index + 1}
+                    </Badge>
+                    <Text variant="mono" size="sm" weight="bold" className="text-text-primary">
+                      {code} {placeNames[code] ? `(${placeNames[code]})` : ""}
+                    </Text>
+                  </Stack>
+
+                  <Stack direction="row" align="center" gap={2}>
+                    {/* Minus button */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const current = inferredStayDurations[code] ?? 2;
+                        setInferredStayDurations({
+                          ...inferredStayDurations,
+                          [code]: Math.max(0, current - 1),
+                        });
+                      }}
+                      className="w-7 h-7 flex items-center justify-center rounded-md border border-border-default bg-bg-surface text-text-primary hover:bg-bg-surface-raised hover:border-accent text-sm font-bold transition-all focus:outline-none select-none active:scale-95 cursor-pointer"
+                    >
+                      -
+                    </button>
+
+                    {/* Value display */}
+                    <span className="w-8 text-center text-sm font-mono font-bold text-text-primary select-none">
+                      {inferredStayDurations[code] ?? 2}
+                    </span>
+
+                    {/* Plus button */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const current = inferredStayDurations[code] ?? 2;
+                        setInferredStayDurations({
+                          ...inferredStayDurations,
+                          [code]: Math.min(30, current + 1),
+                        });
+                      }}
+                      className="w-7 h-7 flex items-center justify-center rounded-md border border-border-default bg-bg-surface text-text-primary hover:bg-bg-surface-raised hover:border-accent text-sm font-bold transition-all focus:outline-none select-none active:scale-95 cursor-pointer"
+                    >
+                      +
+                    </button>
+
+                    <Text variant="subtext" size="xs" className="ml-2 w-28 text-left select-none text-text-secondary">
+                      {(inferredStayDurations[code] ?? 2) === 0
+                        ? "same day departure"
+                        : (inferredStayDurations[code] ?? 2) === 1
+                        ? "night"
+                        : "nights"}
+                    </Text>
+                  </Stack>
+                </Stack>
+              ))}
+            </Stack>
+
+            {/* End Airport */}
+            <Stack direction="row" align="center" gap={3} className="border-t border-border-default pt-3 bg-bg-surface/40 p-2.5 rounded-md mt-1">
+              <div className="w-6 h-6 rounded-full bg-border-default/40 flex items-center justify-center border border-border-default">
+                <div className="w-2.5 h-2.5 rounded-full bg-text-secondary" />
+              </div>
+              <Stack gap={1}>
+                <Text variant="subtext" size="xs" className="uppercase tracking-wider font-bold text-text-secondary">Return Base</Text>
+                <Text variant="mono" size="sm" weight="bold" className="text-text-primary">
+                  {activeUser?.home_airport} {activeUser?.home_city ? `(${activeUser.home_city})` : ""}
+                </Text>
+              </Stack>
+            </Stack>
+
           </Stack>
 
           {error && (
