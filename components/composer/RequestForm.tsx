@@ -10,9 +10,12 @@ import { CityChainBuilder } from "./CityChainBuilder";
 import { buildDecisionQuery } from "@/lib/decision-params";
 import { getBenchmarkQuery } from "@/lib/benchmark-queries";
 import { Route as RouteIcon, ChevronDown, ChevronUp } from "lucide-react";
+import { useUsers } from "@/lib/queries";
 
 export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
   const router = useRouter();
+  const { data: users = [] } = useUsers();
+  const activeUser = users.find((u) => u.user_id === selectedUserId);
 
   const [requestText, setRequestText] = React.useState("");
   const [destination, setDestination] = React.useState("");
@@ -98,21 +101,38 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
     <Card className="bg-bg-surface border-border-default">
       <form onSubmit={onSubmit}>
         <Stack gap={5}>
-          {/* Active Traveler Indicator Badge */}
-          <Stack direction="row" align="center" justify="between" className="bg-bg-surface-raised/40 p-3 rounded-md border border-border-default">
-            <Stack direction="row" align="center" gap={2}>
-              <span className="w-2.5 h-2.5 rounded-full bg-accent animate-pulse" />
-              <Text variant="body" size="sm" weight="semibold">
-                Active Profile:
-              </Text>
-              <Text variant="mono" size="xs" className="bg-accent/10 border border-accent/30 text-accent px-2 py-0.5 rounded font-bold">
-                {selectedUserId}
-              </Text>
+          {/* Active Traveler Indicator Card */}
+          {activeUser && (
+            <Stack gap={2} className="bg-bg-surface-raised/40 p-4 rounded-md border border-border-default">
+              <Stack direction="row" align="center" justify="between" className="flex-wrap gap-2">
+                <Stack direction="row" align="center" gap={2}>
+                  <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                  <Text variant="body" size="sm" weight="semibold" className="text-text-primary">
+                    Active Traveler: {activeUser.user_id}
+                  </Text>
+                </Stack>
+                <Text variant="subtext" size="xs" className="text-text-secondary italic">
+                  Age {activeUser.age} · Home: {activeUser.home_city} ({activeUser.home_airport})
+                </Text>
+              </Stack>
+              <div className="flex flex-wrap gap-2 text-[11px] border-t border-border-default/40 pt-2.5 mt-1">
+                <span className="bg-bg-base border border-border-default px-2 py-0.5 rounded text-text-secondary">
+                  Cabin: <strong className="text-text-primary">{activeUser.preferred_cabin}</strong>
+                </span>
+                <span className="bg-bg-base border border-border-default px-2 py-0.5 rounded text-text-secondary">
+                  Price Sensitivity: <strong className="text-text-primary">{activeUser.price_sensitivity}</strong>
+                </span>
+                <span className="bg-bg-base border border-border-default px-2 py-0.5 rounded text-text-secondary">
+                  Direct flight: <strong className="text-text-primary">{activeUser.direct_preference}</strong>
+                </span>
+                {activeUser.preferred_airlines && (
+                  <span className="bg-bg-base border border-border-default px-2 py-0.5 rounded text-text-secondary">
+                    Airlines: <strong className="text-text-primary">{activeUser.preferred_airlines.replace(/;/g, ", ")}</strong>
+                  </span>
+                )}
+              </div>
             </Stack>
-            <Text variant="subtext" size="xs">
-              Configured from sidebar
-            </Text>
-          </Stack>
+          )}
 
           {/* Trip Description Textarea */}
           <Field
