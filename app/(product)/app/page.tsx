@@ -23,17 +23,20 @@ export default function ComposerPage() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const isLoadedRef = React.useRef(false);
+
   // Load saved traveler ID
   React.useEffect(() => {
     const saved = localStorage.getItem("saarathi_selected_user_id");
     if (saved) {
       setSelectedUserId(saved);
     }
+    isLoadedRef.current = true;
   }, []);
 
   // Save traveler ID on change
   React.useEffect(() => {
-    if (selectedUserId) {
+    if (isLoadedRef.current && selectedUserId) {
       localStorage.setItem("saarathi_selected_user_id", selectedUserId);
     }
   }, [selectedUserId]);

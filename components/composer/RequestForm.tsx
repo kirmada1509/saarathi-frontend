@@ -26,6 +26,8 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
   const [inferredStayDurations, setInferredStayDurations] = React.useState<Record<string, number>>({});
   const [placeNames, setPlaceNames] = React.useState<Record<string, string>>({});
 
+  const loadedForUserRef = React.useRef<string | null>(null);
+
   // Sync state whenever selectedUserId is changed from the parent sidebar
   React.useEffect(() => {
     if (selectedUserId) {
@@ -48,12 +50,13 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
           }
         }
       }
+      loadedForUserRef.current = selectedUserId;
     }
   }, [selectedUserId, users]);
 
   // Persist requestText changes to localStorage
   React.useEffect(() => {
-    if (selectedUserId && requestText) {
+    if (selectedUserId && requestText && loadedForUserRef.current === selectedUserId) {
       localStorage.setItem(`saarathi_request_text_${selectedUserId}`, requestText);
     }
   }, [selectedUserId, requestText]);
