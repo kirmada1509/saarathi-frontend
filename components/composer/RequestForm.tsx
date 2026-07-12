@@ -6,18 +6,14 @@ import { Card, Stack, Field, Text, Clickable } from "@/components/ui/primitives"
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { TravelerSelect } from "./TravelerSelect";
 import { CityChainBuilder } from "./CityChainBuilder";
-import { useUsers } from "@/lib/queries";
 import { buildDecisionQuery } from "@/lib/decision-params";
 import { getBenchmarkQuery } from "@/lib/benchmark-queries";
 import { Route as RouteIcon, ChevronDown, ChevronUp } from "lucide-react";
 
-export function RequestForm() {
+export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
   const router = useRouter();
-  const { data: users = [], isLoading } = useUsers();
 
-  const [userId, setUserId] = React.useState("");
   const [requestText, setRequestText] = React.useState("");
   const [destination, setDestination] = React.useState("");
   const [cities, setCities] = React.useState<string[]>([]);
@@ -27,28 +23,30 @@ export function RequestForm() {
   const [showAdvanced, setShowAdvanced] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  function handleUserChange(id: string) {
-    setUserId(id);
-    const seed = getBenchmarkQuery(id);
-    setRequestText(seed.requestText);
-    setError(null);
-    setStayDurations({});
+  // Sync state whenever selectedUserId is changed from the parent sidebar
+  React.useEffect(() => {
+    if (selectedUserId) {
+      const seed = getBenchmarkQuery(selectedUserId);
+      setRequestText(seed.requestText);
+      setError(null);
+      setStayDurations({});
 
-    // Pre-populate manual controls for fallback/override
-    if (seed.cities.length > 0) {
-      setCities(seed.cities);
-      setDestination("");
-      setRouteMode("multi");
-    } else {
-      setCities([]);
-      setDestination(seed.destination || "");
-      setRouteMode("single");
+      // Pre-populate manual controls for fallback/override
+      if (seed.cities.length > 0) {
+        setCities(seed.cities);
+        setDestination("");
+        setRouteMode("multi");
+      } else {
+        setCities([]);
+        setDestination(seed.destination || "");
+        setRouteMode("single");
+      }
     }
-  }
+  }, [selectedUserId]);
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!userId) {
+    if (!selectedUserId) {
       setError("Pick a traveler first.");
       return;
     }
@@ -78,7 +76,7 @@ export function RequestForm() {
       }
     } else {
       // If it matches the traveler default benchmark query, use its seed destination/cities
-      const seed = getBenchmarkQuery(userId);
+      const seed = getBenchmarkQuery(selectedUserId);
       if (requestText.trim() === seed.requestText.trim()) {
         resolvedDestination = seed.destination || undefined;
         resolvedCities = seed.cities.length > 0 ? seed.cities : undefined;
@@ -87,7 +85,7 @@ export function RequestForm() {
 
     setError(null);
     const query = buildDecisionQuery({
-      userId,
+      userId: selectedUserId,
       requestText,
       destination: resolvedDestination,
       cities: resolvedCities,
@@ -100,10 +98,21 @@ export function RequestForm() {
     <Card className="bg-bg-surface border-border-default">
       <form onSubmit={onSubmit}>
         <Stack gap={5}>
-          {/* Traveler Selection */}
-          <Field label="Traveler">
-            <TravelerSelect users={users} value={userId} onValueChange={handleUserChange} />
-          </Field>
+          {/* Active Traveler Indicator Badge */}
+          <Stack direction="row" align="center" justify="between" className="bg-bg-surface-raised/40 p-3 rounded-md border border-border-default">
+            <Stack direction="row" align="center" gap={2}>
+              <span className="w-2.5 h-2.5 rounded-full bg-accent animate-pulse" />
+              <Text variant="body" size="sm" weight="semibold">
+                Active Profile:
+              </Text>
+              <Text variant="mono" size="xs" className="bg-accent/10 border border-accent/30 text-accent px-2 py-0.5 rounded font-bold">
+                {selectedUserId}
+              </Text>
+            </Stack>
+            <Text variant="subtext" size="xs">
+              Configured from sidebar
+            </Text>
+          </Stack>
 
           {/* Trip Description Textarea */}
           <Field
@@ -200,7 +209,6 @@ export function RequestForm() {
 
           <Button
             type="submit"
-            disabled={isLoading}
             className="bg-accent text-text-on-accent hover:bg-accent-hover w-full sm:w-auto"
           >
             <RouteIcon className="size-4" /> Plan the itinerary
