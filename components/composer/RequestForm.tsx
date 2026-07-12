@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Card, Stack, Field, Text, Badge } from "@/components/ui/primitives";
+import { Card, Stack, Field, Text } from "@/components/ui/primitives";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { buildDecisionQuery } from "@/lib/decision-params";
@@ -25,6 +25,7 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
   const [inferredCities, setInferredCities] = React.useState<string[]>([]);
   const [inferredStayDurations, setInferredStayDurations] = React.useState<Record<string, number>>({});
   const [placeNames, setPlaceNames] = React.useState<Record<string, string>>({});
+  const [returnCity, setReturnCity] = React.useState<string | undefined>(undefined);
 
   const loadedForUserRef = React.useRef<string | null>(null);
 
@@ -52,6 +53,7 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
     const tid = setTimeout(() => {
       setError(null);
       setShowStaysConfirmation(false);
+      setReturnCity(undefined);
       setRequestText(next);
       loadedForUserRef.current = selectedUserId;
     }, 0);
@@ -97,6 +99,7 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
         setInferredCities(res.cities || []);
         setInferredStayDurations(res.stayDurations || {});
         setPlaceNames(res.placeNames || {});
+        setReturnCity(res.returnCity);
         setShowStaysConfirmation(true);
       }
     } catch (err) {
@@ -123,7 +126,7 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
     return (
       <Card className="bg-bg-surface border-border-default relative overflow-hidden">
         <span className="absolute top-0 left-0 w-1.5 h-full bg-accent" />
-        <Stack gap={5} className="pl-2">
+        <Stack gap={6} className="p-6">
           {/* Header */}
           <Stack gap={1}>
             <Stack direction="row" align="center" gap={2}>
@@ -132,120 +135,143 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
                 Confirm Stay Durations
               </Text>
             </Stack>
-            <Text variant="body" size="sm" className="text-text-secondary">
+            <Text variant="body" size="sm" className="text-text-secondary leading-relaxed">
               We detected a multi-city route. Please configure how many nights you want to spend at each destination:
             </Text>
           </Stack>
 
           {/* Active Traveler Summary */}
           {activeUser && (
-            <Stack className="bg-bg-surface-raised/40 p-3 rounded border border-border-default text-xs text-text-secondary">
-              <Text variant="subtext" size="xs">
-                Traveler Profile: <strong className="text-text-primary">{activeUser.user_id}</strong> · Home Base: <strong className="text-text-primary">{activeUser.home_city} ({activeUser.home_airport})</strong>
-              </Text>
+            <Stack className="bg-bg-surface-raised/40 p-3 rounded-lg border border-border-default/60 text-xs text-text-secondary" gap={0}>
+              Traveler Profile: <strong className="text-text-primary font-semibold">{activeUser.user_id}</strong> · Home Base: <strong className="text-text-primary font-semibold">{activeUser.home_city} ({activeUser.home_airport})</strong>
             </Stack>
           )}
-          {/* Journey Sequence */}
-          <Stack gap={4} className="border border-border-default rounded-lg p-4 bg-bg-surface-raised/20 relative">
-            
-            {/* Start Airport */}
-            <Stack direction="row" align="center" gap={3} className="border-b border-border-default pb-3 bg-bg-surface/40 p-2.5 rounded-md">
-              <Stack className="w-6 h-6 rounded-full bg-accent/20 items-center justify-center border border-accent">
-                <Stack className="w-2.5 h-2.5 rounded-full bg-accent" />
-              </Stack>
-              <Stack gap={1}>
-                <Text variant="subtext" size="xs" className="uppercase tracking-wider font-bold text-accent">Start Base</Text>
-                <Text variant="mono" size="sm" weight="bold" className="text-text-primary">
-                  {activeUser?.home_airport} {activeUser?.home_city ? `(${activeUser.home_city})` : ""}
-                </Text>
-              </Stack>
-            </Stack>
 
-            {/* Intermediate Stays */}
-            <Stack gap={3} className="py-1">
-              <Text variant="subtext" size="xs" className="uppercase tracking-wider font-bold text-text-secondary pl-1">
-                Intermediate Stays
-              </Text>
-              {inferredCities.map((code, index) => (
-                <Stack
-                  key={`${code}-${index}`}
-                  direction="row"
-                  align="center"
-                  justify="between"
-                  className="border border-border-default rounded-md px-3 py-2 bg-bg-surface hover:border-accent/40 transition-colors"
-                >
-                  <Stack direction="row" align="center" gap={3}>
-                    <Badge variant="default" className="bg-bg-surface-raised border border-border-default text-text-primary font-bold">
-                      Stop {index + 1}
-                    </Badge>
+          {/* Journey Sequence - Premium Stepper UI (2-column layout) */}
+          <Stack gap={0} className="space-y-0">
+            {/* Start Base Step */}
+            <Stack direction="row" gap={4} className="items-stretch">
+              {/* Stepper Node (Left Column) */}
+              <Stack align="center" gap={0} className="w-7 shrink-0">
+                <Stack align="center" justify="center" className="flex h-7 w-7 shrink-0 rounded-full border-2 border-accent bg-bg-surface text-accent text-xs font-mono font-bold shadow-xs">
+                  01
+                </Stack>
+                {/* Only show line if there is at least one intermediate stop or return base */}
+                {(inferredCities.filter((code) => code !== returnCity).length > 0 || !!returnCity) && (
+                  <Stack className="w-0.5 h-10 bg-border-default" />
+                )}
+              </Stack>
+              {/* Stepper Content (Right Column) */}
+              <Stack className="flex-1 pb-5 min-w-0" gap={0}>
+                <Stack className="bg-bg-surface-raised/45 p-4 rounded-lg border border-border-default hover:bg-bg-surface-raised/60 transition-colors" gap={0}>
+                  <Stack gap={1}>
+                    <Text variant="subtext" size="xs" className="uppercase tracking-wider font-bold text-accent">Departure Origin</Text>
                     <Text variant="mono" size="sm" weight="bold" className="text-text-primary">
-                      {code} {placeNames[code] ? `(${placeNames[code]})` : ""}
-                    </Text>
-                  </Stack>
-
-                  <Stack direction="row" align="center" gap={2}>
-                    {/* Minus button */}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        const current = inferredStayDurations[code] ?? 2;
-                        setInferredStayDurations({
-                          ...inferredStayDurations,
-                          [code]: Math.max(0, current - 1),
-                        });
-                      }}
-                      className="w-7 h-7 p-0 items-center justify-center rounded-md border border-border-default bg-bg-surface text-text-primary hover:bg-bg-surface-raised hover:border-accent text-sm font-bold transition-all focus:outline-none select-none active:scale-95 cursor-pointer"
-                    >
-                      -
-                    </Button>
-
-                    {/* Value display */}
-                    <span className="w-8 text-center text-sm font-mono font-bold text-text-primary select-none">
-                      {inferredStayDurations[code] ?? 2}
-                    </span>
-
-                    {/* Plus button */}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        const current = inferredStayDurations[code] ?? 2;
-                        setInferredStayDurations({
-                          ...inferredStayDurations,
-                          [code]: Math.min(30, current + 1),
-                        });
-                      }}
-                      className="w-7 h-7 p-0 items-center justify-center rounded-md border border-border-default bg-bg-surface text-text-primary hover:bg-bg-surface-raised hover:border-accent text-sm font-bold transition-all focus:outline-none select-none active:scale-95 cursor-pointer"
-                    >
-                      +
-                    </Button>
-
-                    <Text variant="subtext" size="xs" className="ml-2 w-28 text-left select-none text-text-secondary">
-                      {(inferredStayDurations[code] ?? 2) === 0
-                        ? "same day departure"
-                        : (inferredStayDurations[code] ?? 2) === 1
-                        ? "night"
-                        : "nights"}
+                      {activeUser?.home_airport} {activeUser?.home_city ? `(${activeUser.home_city})` : ""}
                     </Text>
                   </Stack>
                 </Stack>
-              ))}
-            </Stack>
-
-            {/* End Airport */}
-            <Stack direction="row" align="center" gap={3} className="border-t border-border-default pt-3 bg-bg-surface/40 p-2.5 rounded-md mt-1">
-              <Stack className="w-6 h-6 rounded-full bg-border-default/40 items-center justify-center border border-border-default">
-                <Stack className="w-2.5 h-2.5 rounded-full bg-text-secondary" />
-              </Stack>
-              <Stack gap={1}>
-                <Text variant="subtext" size="xs" className="uppercase tracking-wider font-bold text-text-secondary">Return Base</Text>
-                <Text variant="mono" size="sm" weight="bold" className="text-text-primary">
-                  {activeUser?.home_airport} {activeUser?.home_city ? `(${activeUser.home_city})` : ""}
-                </Text>
               </Stack>
             </Stack>
 
+            {/* Intermediate Stops */}
+            {inferredCities.filter((code) => code !== returnCity).map((code, index, arr) => {
+              const stopNumber = index + 2;
+              const formattedNumber = String(stopNumber).padStart(2, "0");
+              const isLast = index === arr.length - 1;
+              const showLine = !isLast || !!returnCity;
+              return (
+                <Stack key={`${code}-${index}`} direction="row" gap={4} className="items-stretch">
+                  {/* Stepper Node (Left Column) */}
+                  <Stack align="center" gap={0} className="w-7 shrink-0">
+                    <Stack align="center" justify="center" className="flex h-7 w-7 shrink-0 rounded-full border-2 border-border-default bg-bg-surface text-text-secondary text-xs font-mono font-bold shadow-xs">
+                      {formattedNumber}
+                    </Stack>
+                    {showLine && <Stack className="w-0.5 flex-1 min-h-[40px] bg-border-default" />}
+                  </Stack>
+                  {/* Stepper Content (Right Column) */}
+                  <Stack className="flex-1 pb-5 min-w-0" gap={0}>
+                    <Stack className="border border-border-default rounded-lg p-4 bg-bg-surface hover:border-accent/40 hover:shadow-xs transition-all duration-200" gap={0}>
+                      <Stack className="flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <Stack gap={1} className="min-w-0">
+                          <Text variant="subtext" size="xs" className="uppercase tracking-wider font-bold text-text-secondary">Stop {index + 1}</Text>
+                          <Text variant="mono" size="base" weight="bold" className="text-text-primary truncate">
+                            {code} {placeNames[code] ? `(${placeNames[code]})` : ""}
+                          </Text>
+                        </Stack>
+
+                        {/* Stays Counter adjusters */}
+                        <Stack direction="row" align="center" gap={3} className="shrink-0 self-start sm:self-center">
+                          <Stack direction="row" align="center" gap={1} className="bg-bg-surface-raised p-1 rounded-md border border-border-default/60 shadow-inner">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => {
+                                const current = inferredStayDurations[code] ?? 2;
+                                setInferredStayDurations({
+                                  ...inferredStayDurations,
+                                  [code]: Math.max(0, current - 1),
+                                });
+                              }}
+                              className="w-7 h-7 p-0 items-center justify-center rounded border border-border-default bg-bg-surface text-text-primary hover:bg-bg-surface-raised hover:border-accent text-xs font-bold transition-all cursor-pointer"
+                            >
+                              -
+                            </Button>
+                            <span className="w-8 text-center text-sm font-mono font-bold text-text-primary select-none">
+                              {inferredStayDurations[code] ?? 2}
+                            </span>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => {
+                                const current = inferredStayDurations[code] ?? 2;
+                                setInferredStayDurations({
+                                  ...inferredStayDurations,
+                                  [code]: Math.min(30, current + 1),
+                                });
+                              }}
+                              className="w-7 h-7 p-0 items-center justify-center rounded border border-border-default bg-bg-surface text-text-primary hover:bg-bg-surface-raised hover:border-accent text-xs font-bold transition-all cursor-pointer"
+                            >
+                              +
+                            </Button>
+                          </Stack>
+                          <Text variant="subtext" size="xs" className="text-text-secondary font-medium font-mono whitespace-nowrap select-none">
+                            {(inferredStayDurations[code] ?? 2) === 0
+                              ? "same day departure"
+                              : (inferredStayDurations[code] ?? 2) === 1
+                              ? "night"
+                              : "nights"}
+                          </Text>
+                        </Stack>
+                      </Stack>
+                    </Stack>
+                  </Stack>
+                </Stack>
+              );
+            })}
+
+            {/* Return Base Step */}
+            {returnCity && (
+              <Stack direction="row" gap={4} className="items-stretch">
+                {/* Stepper Node (Left Column) */}
+                <Stack align="center" gap={0} className="w-7 shrink-0">
+                  <Stack align="center" justify="center" className="flex h-7 w-7 shrink-0 rounded-full border-2 border-border-default bg-bg-surface-raised text-text-secondary text-xs font-mono font-bold shadow-xs">
+                    {String(inferredCities.filter((code) => code !== returnCity).length + 2).padStart(2, "0")}
+                  </Stack>
+                </Stack>
+                {/* Stepper Content (Right Column) */}
+                <Stack className="flex-1 min-w-0" gap={0}>
+                  <Stack className="bg-bg-surface-raised/45 p-4 rounded-lg border border-border-default hover:bg-bg-surface-raised/60 transition-colors" gap={0}>
+                    <Stack gap={1}>
+                      <Text variant="subtext" size="xs" className="uppercase tracking-wider font-bold text-text-secondary">Return Base</Text>
+                      <Text variant="mono" size="sm" weight="bold" className="text-text-primary">
+                        {activeUser?.home_airport} {activeUser?.home_city ? `(${activeUser.home_city})` : ""}
+                      </Text>
+                    </Stack>
+                  </Stack>
+                </Stack>
+              </Stack>
+            )}
           </Stack>
 
           {error && (

@@ -7,6 +7,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { cn } from "@/lib/utils";
 import type { InferredPreference } from "@/core/types";
 
 const chartConfig = {
@@ -27,7 +28,7 @@ export function PreferenceRadar({
   ];
 
   return (
-    <ChartContainer config={chartConfig} className={className}>
+    <ChartContainer config={chartConfig} className={cn("h-[200px] w-full", className)}>
       <RadarChart data={data}>
         <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
         <PolarAngleAxis dataKey="dimension" tick={{ fill: "var(--text-secondary)", fontSize: 11 }} />

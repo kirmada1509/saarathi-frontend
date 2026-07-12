@@ -69,7 +69,7 @@ export default function ComposerPage() {
     <Stack className="relative overflow-hidden">
       <GradientMotif variant="hero" />
       <Container className="max-w-7xl py-8 md:py-12">
-        <Stack direction="row" className="flex-col lg:flex-row gap-6 items-stretch relative select-none">
+        <Stack direction="row" className="flex-col lg:flex-row gap-6 items-stretch relative">
           {/* Form Column (Flex 1) */}
           <Stack className="flex-1 w-full min-w-0">
             <Stack gap={6}>

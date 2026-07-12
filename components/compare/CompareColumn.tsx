@@ -47,7 +47,7 @@ export function CompareColumn({
 
             <ConfidenceGauge confidence={response.confidence} className="max-w-[120px]" />
 
-            <PreferenceRadar preference={response.preference} className="mx-auto aspect-square max-h-[180px]" />
+            <PreferenceRadar preference={response.preference} className="mx-auto h-[180px] w-full" />
 
             {response.verdict ? (
               <Stack gap={1} className="border-t border-border-default pt-3">

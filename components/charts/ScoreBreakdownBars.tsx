@@ -7,6 +7,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { cn } from "@/lib/utils";
 
 // Real keys emitted by ranking.ts's breakdown object — each is already the
 // *weighted contribution* to the final score, not a raw 0-1 sub-score.
@@ -34,7 +35,7 @@ export function ScoreBreakdownBars({
     .map(([key, value]) => ({ dimension: LABELS[key], score: Math.round(value * 1000) / 1000 }));
 
   return (
-    <ChartContainer config={chartConfig} className={className}>
+    <ChartContainer config={chartConfig} className={cn("h-[160px] w-full", className)}>
       <BarChart data={data} layout="vertical" margin={{ left: 8, right: 16 }}>
         <CartesianGrid horizontal={false} stroke="var(--border-default)" />
         <XAxis type="number" tick={{ fill: "var(--text-secondary)", fontSize: 10 }} />

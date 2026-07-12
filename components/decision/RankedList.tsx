@@ -107,7 +107,7 @@ export function RankedList({
                       {isExpanded && f.breakdown && (
                         <Stack className="p-4 bg-bg-surface-raised/60 border-t border-b border-border-default/60 text-xs font-mono">
                           <Stack className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <ScoreBreakdownBars breakdown={f.breakdown} className="min-h-[160px]" />
+                            <ScoreBreakdownBars breakdown={f.breakdown} className="h-[160px]" />
 
                             <Stack gap={2}>
                               <Text variant="heading" size="xs" className="text-accent font-semibold flex items-center gap-1.5">

@@ -30,7 +30,7 @@ export function EvidencePanel({
             <Text variant="heading" size="sm" className="text-accent font-semibold">
               Inferred dimension weights
             </Text>
-            <PreferenceRadar preference={preference} className="mx-auto aspect-square max-h-[200px]" />
+            <PreferenceRadar preference={preference} className="mx-auto h-[200px] w-full" />
             <Stack gap={1} className="border-t border-border-default pt-3 mt-1 text-xs">
               <Text variant="body" size="xs" weight="medium">Other hard constraints</Text>
               <Text variant="mono" size="xs" className="text-text-primary">
