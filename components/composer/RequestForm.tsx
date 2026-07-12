@@ -82,7 +82,7 @@ export function RequestForm({
       loadedForUserRef.current = selectedUserId;
     }, 0);
     return () => clearTimeout(tid);
-  }, [selectedUserId, users]);
+  }, [selectedUserId, users, setRequestText]);
 
   // Persist requestText changes to localStorage
   React.useEffect(() => {

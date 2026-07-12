@@ -66,7 +66,7 @@ export default function ComposerPage() {
         });
         router.push(`/app/decision?${query}`);
       }
-    } catch (err) {
+    } catch {
       const query = buildDecisionQuery({
         userId: newUser.user_id,
         requestText: text,

@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Stack } from "@/components/ui/primitives";
 import { createUser, type CreateUserPayload } from "@/lib/api";
 import { UserSummary } from "@/lib/types";
 
@@ -95,12 +96,12 @@ export function AddTravelerDialog({
 
         <form onSubmit={handleSubmit} className="space-y-4 py-2">
           {error && (
-            <div className="p-3 bg-signal-negative/10 border border-signal-negative/20 text-signal-negative text-xs rounded-md">
+            <Stack className="p-3 bg-signal-negative/10 border border-signal-negative/20 text-signal-negative text-xs rounded-md">
               {error}
-            </div>
+            </Stack>
           )}
 
-          <div className="space-y-1">
+          <Stack gap={1}>
             <label className="text-xs font-semibold text-text-primary">
               Home Airport (3-Letter Code) *
             </label>
@@ -112,16 +113,16 @@ export function AddTravelerDialog({
               className="uppercase"
               required
             />
-          </div>
+          </Stack>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1 flex flex-col">
+          <Stack direction="row" gap={4} className="w-full">
+            <Stack gap={1} className="flex-grow flex-1">
               <label className="text-xs font-semibold text-text-primary mb-1">
                 Price Sensitivity
               </label>
               <Select
                 value={priceSensitivity}
-                onValueChange={(v) => setPriceSensitivity(v as any)}
+                onValueChange={(v) => setPriceSensitivity(v as "low" | "medium" | "high" | "none")}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue />
@@ -133,15 +134,15 @@ export function AddTravelerDialog({
                   <SelectItem value="high">High</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </Stack>
 
-            <div className="space-y-1 flex flex-col">
+            <Stack gap={1} className="flex-grow flex-1">
               <label className="text-xs font-semibold text-text-primary mb-1">
                 Direct Flight Pref
               </label>
               <Select
                 value={directPreference}
-                onValueChange={(v) => setDirectPreference(v as any)}
+                onValueChange={(v) => setDirectPreference(v as "strong" | "moderate" | "none")}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue />
@@ -152,10 +153,10 @@ export function AddTravelerDialog({
                   <SelectItem value="strong">Strong</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-          </div>
+            </Stack>
+          </Stack>
 
-          <div className="space-y-1">
+          <Stack gap={1}>
             <label className="text-xs font-semibold text-text-primary">
               Preferred Cabin Class
             </label>
@@ -164,9 +165,9 @@ export function AddTravelerDialog({
               onChange={(e) => setPreferredCabin(e.target.value)}
               placeholder="e.g. Economy, Business, First"
             />
-          </div>
+          </Stack>
 
-          <div className="space-y-1">
+          <Stack gap={1}>
             <label className="text-xs font-semibold text-text-primary">
               Preferred Airlines (Semicolon-Delimited)
             </label>
@@ -175,9 +176,9 @@ export function AddTravelerDialog({
               onChange={(e) => setPreferredAirlines(e.target.value)}
               placeholder="e.g. UA;DL;LH"
             />
-          </div>
+          </Stack>
 
-          <div className="space-y-1">
+          <Stack gap={1}>
             <label className="text-xs font-semibold text-text-primary">
               Travel History / Rationale (Pipe-Delimited) *
             </label>
@@ -191,7 +192,7 @@ export function AddTravelerDialog({
             <span className="text-[10px] text-text-secondary leading-normal block">
               Exercises the preference inference engine (LLM with regex + embeddings fallback).
             </span>
-          </div>
+          </Stack>
 
           <DialogFooter className="pt-2">
             <Button

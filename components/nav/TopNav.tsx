@@ -6,8 +6,7 @@ import { usePathname } from "next/navigation";
 import { Container, Stack, Text, NavLink, Clickable } from "@/components/ui/primitives";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { useUIStore } from "@/lib/store";
-import { Moon, Sun, Search, Menu, PlaneTakeoff } from "lucide-react";
+import { Moon, Sun, Menu, PlaneTakeoff } from "lucide-react";
 
 const NAV_LINKS = [
   { href: "/app", label: "Plan Trip" },
@@ -21,7 +20,6 @@ export function TopNav() {
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const setCommandPaletteOpen = useUIStore((s) => s.setCommandPaletteOpen);
 
   React.useEffect(() => {
     // Mount flag avoids a hydration mismatch on the theme icon (server never

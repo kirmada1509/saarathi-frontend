@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Container, Stack, EmptyState, NavLink, Card, Badge, Clickable, Text } from "@/components/ui/primitives";
+import { Container, Stack, EmptyState, NavLink, Card, Clickable, Text } from "@/components/ui/primitives";
 import { Compass, AlertCircle, Plane, Sparkles } from "lucide-react";
 import { parseDecisionParams, buildDecisionQuery, perturbationsEqual } from "@/lib/decision-params";
 import { useRecommendation, useLegRecommendation, useUsers } from "@/lib/queries";
@@ -23,16 +23,17 @@ export function DecisionScreen() {
   const { data: users } = useUsers();
 
   // 1. Maintain local state for perturbations and legIndex to guarantee instant reactivity
-  const [perturbations, setPerturbations] = React.useState<Perturbation[]>([]);
-  const [legIndex, setLegIndex] = React.useState<number>(0);
+  const [perturbations, setPerturbations] = React.useState<Perturbation[]>(() => params?.perturbations || []);
+  const [legIndex, setLegIndex] = React.useState<number>(() => params?.leg || 0);
 
   // Sync state from URL when URL is initially parsed or changes (e.g. initial mount or back button)
-  React.useEffect(() => {
-    if (params) {
-      setPerturbations(params.perturbations || []);
-      setLegIndex(params.leg || 0);
-    }
-  }, [searchParams]);
+  const [prevSearchParamsString, setPrevSearchParamsString] = React.useState(() => searchParams?.toString() || "");
+  const currentParamsString = searchParams?.toString() || "";
+  if (currentParamsString !== prevSearchParamsString) {
+    setPrevSearchParamsString(currentParamsString);
+    setPerturbations(params?.perturbations || []);
+    setLegIndex(params?.leg || 0);
+  }
 
   // Section refs for scroll-to behavior
   const summaryRef = React.useRef<HTMLElement>(null);

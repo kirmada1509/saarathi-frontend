@@ -580,9 +580,9 @@ export default function HowItWorksPage() {
                   </li>
                   <li>
                     <strong className="text-text-primary">Linear Scoring Equation:</strong>
-                    <div className="bg-bg-surface-raised p-2.5 my-1.5 rounded-md font-mono text-[11px] overflow-x-auto text-text-primary border border-border-default/60">
+                    <Stack className="bg-bg-surface-raised p-2.5 my-1.5 rounded-md font-mono text-[11px] overflow-x-auto text-text-primary border border-border-default/60">
                       Score = (costWeight * PriceScore + directWeight * DirectScore + (1 - costWeight) * 0.5 * DurationScore + convenienceWeight * 0.3 * CabinScore + 0.2 * AirlineScore + baggageWeight * BaggageScore) * DemandAdjustment * HolidayAdjustment + DayBonus
-                    </div>
+                    </Stack>
                   </li>
                   <li>
                     <strong className="text-text-primary">Scoring Adjusters:</strong> Price and duration are normalized relative to the current candidate pool. It applies multipliers for demand tiers (e.g., low demand &rarr; 1.05x bonus) and holiday seasons (0.95x penalty), plus a soft <code className="font-mono text-[11px] bg-bg-surface-raised px-1 py-0.5 rounded">+0.15</code> bonus for preferred days of the week.
@@ -622,9 +622,9 @@ export default function HowItWorksPage() {
                 <ul className="list-disc pl-5 text-xs text-text-secondary space-y-1.5 leading-relaxed">
                   <li>
                     <strong className="text-text-primary">Closed-Form Price Thresholds:</strong> For runner-up flights, it solves:
-                    <div className="bg-bg-surface-raised p-2 my-1.5 rounded font-mono text-[11px] text-text-primary border border-border-default/60 text-center">
+                    <Stack className="bg-bg-surface-raised p-2 my-1.5 rounded font-mono text-[11px] text-text-primary border border-border-default/60 text-center">
                       priceDrop = (Score_champion - Score_challenger) * PriceRange / (cost_weight * demandAdj * holidayAdj)
-                    </div>
+                    </Stack>
                     If the required drop is &le; 60% of the flight fare, it outputs a realistic threshold price.
                   </li>
                   <li>
