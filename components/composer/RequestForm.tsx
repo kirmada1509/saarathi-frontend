@@ -11,7 +11,13 @@ import { parseRoute } from "@/lib/api";
 import { Route as RouteIcon, Sparkles } from "lucide-react";
 import { useUsers } from "@/lib/queries";
 
-export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
+export function RequestForm({
+  selectedUserId,
+  onStaysConfirmationChange,
+}: {
+  selectedUserId: string;
+  onStaysConfirmationChange?: (show: boolean) => void;
+}) {
   const router = useRouter();
   const { data: users = [] } = useUsers();
   const activeUser = users.find((u) => u.user_id === selectedUserId);
@@ -22,6 +28,11 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
   // Inline confirmation state variables
   const [isAnalyzing, setIsAnalyzing] = React.useState(false);
   const [showStaysConfirmation, setShowStaysConfirmation] = React.useState(false);
+
+  React.useEffect(() => {
+    onStaysConfirmationChange?.(showStaysConfirmation);
+  }, [showStaysConfirmation, onStaysConfirmationChange]);
+
   const [inferredCities, setInferredCities] = React.useState<string[]>([]);
   const [inferredStayDurations, setInferredStayDurations] = React.useState<Record<string, number>>({});
   const [placeNames, setPlaceNames] = React.useState<Record<string, string>>({});
@@ -321,7 +332,7 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
                   Age {activeUser.age} · Home: {activeUser.home_city} ({activeUser.home_airport})
                 </Text>
               </Stack>
-              <Stack className="flex flex-wrap gap-2 text-[11px] border-t border-border-default/40 pt-2.5 mt-1">
+              <Stack direction="row" className="flex-wrap gap-2 text-[11px] border-t border-border-default/40 pt-2.5 mt-1">
                 <span className="bg-bg-base border border-border-default px-2 py-0.5 rounded text-text-secondary">
                   Cabin: <strong className="text-text-primary">{activeUser.preferred_cabin}</strong>
                 </span>

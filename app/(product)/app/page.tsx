@@ -6,6 +6,7 @@ import { RequestForm } from "@/components/composer/RequestForm";
 import { useUsers } from "@/lib/queries";
 import { getBenchmarkQuery } from "@/lib/benchmark-queries";
 import { Check, Search, Users, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function ComposerPage() {
   // Lazy initializers — read from browser APIs once, no setState-in-effect
@@ -14,45 +15,38 @@ export default function ComposerPage() {
     return localStorage.getItem("saarathi_selected_user_id") ?? "U01";
   });
   const [searchQuery, setSearchQuery] = React.useState("");
-  const [width, setWidth] = React.useState(360);
   const [isCollapsed, setIsCollapsed] = React.useState(false);
-  const [isLargeScreen, setIsLargeScreen] = React.useState(() =>
-    typeof window !== "undefined" ? window.innerWidth >= 1024 : false
-  );
+  const [isMobileOpen, setIsMobileOpen] = React.useState(false);
+  const isFirstRenderRef = React.useRef(true);
 
   const { data: users = [], isLoading } = useUsers();
 
-  // Keep isLargeScreen in sync with viewport changes
+  // Load sidebar collapse preference on desktop on mount
   React.useEffect(() => {
-    const handleResize = () => setIsLargeScreen(window.innerWidth >= 1024);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    const tid = setTimeout(() => {
+      const saved = localStorage.getItem("saarathi_sidebar_collapsed");
+      if (saved !== null) {
+        setIsCollapsed(saved === "true");
+      }
+    }, 0);
+    return () => clearTimeout(tid);
   }, []);
+
+  // Persist sidebar collapsed preference
+  React.useEffect(() => {
+    if (isFirstRenderRef.current) {
+      isFirstRenderRef.current = false;
+      return;
+    }
+    localStorage.setItem("saarathi_sidebar_collapsed", String(isCollapsed));
+  }, [isCollapsed]);
 
   // Persist traveler selection
   React.useEffect(() => {
     localStorage.setItem("saarathi_selected_user_id", selectedUserId);
   }, [selectedUserId]);
 
-  const startDragging = React.useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    const startX = e.clientX;
-    const startWidth = width;
 
-    function handleMouseMove(moveEvent: MouseEvent) {
-      const deltaX = startX - moveEvent.clientX;
-      const newWidth = startWidth + deltaX;
-      setWidth(Math.max(280, Math.min(650, newWidth)));
-    }
-
-    function handleMouseUp() {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    }
-
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-  }, [width]);
 
   const filteredUsers = users.filter((u) => {
     const q = searchQuery.toLowerCase().trim();
@@ -82,62 +76,64 @@ export default function ComposerPage() {
                     Describe your trip below. Saarathi will parse your route, analyze traveler preferences, and commit to one verdict.
                   </Text>
                 </Stack>
-                {isCollapsed && (
-                  <Clickable
-                    onClick={() => setIsCollapsed(false)}
-                    className="border border-accent/30 bg-accent/5 text-accent hover:bg-accent/10 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-semibold transition-colors cursor-pointer self-start"
-                  >
-                    <Users className="size-4" />
-                    <span>Show Travelers</span>
-                  </Clickable>
-                )}
+                {/* Show Travelers Button */}
+                <Clickable
+                  onClick={() => {
+                    setIsCollapsed(false);
+                    setIsMobileOpen(true);
+                  }}
+                  className={cn(
+                    "border border-accent/30 bg-accent/5 text-accent hover:bg-accent/10 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-semibold transition-colors cursor-pointer self-start",
+                    isCollapsed ? "lg:flex" : "lg:hidden",
+                    isMobileOpen ? "hidden" : "flex"
+                  )}
+                >
+                  <Users className="size-4" />
+                  <span>Show Travelers</span>
+                </Clickable>
               </Stack>
-              <RequestForm selectedUserId={selectedUserId} />
+              <RequestForm
+                selectedUserId={selectedUserId}
+                onStaysConfirmationChange={(show) => {
+                  if (show) {
+                    setIsCollapsed(true);
+                    setIsMobileOpen(false);
+                  }
+                }}
+              />
             </Stack>
           </Stack>
 
-          {/* Draggable Divider Handle */}
-          {!isCollapsed && (
-            <Stack
-              onMouseDown={startDragging}
-              className="hidden lg:block w-2 hover:bg-accent/10 cursor-col-resize self-stretch transition-colors select-none relative group min-h-100"
-              title="Drag to resize sidebar"
-            >
-              {/* Center divider line */}
-              <Stack className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-px bg-border-default group-hover:bg-accent" />
-              {/* Visual Splitter Grabber Indicator */}
-              <Stack className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-7 rounded bg-bg-surface-raised border border-border-default flex items-center justify-center gap-0.5 px-0.75 group-hover:border-accent group-hover:shadow-sm">
-                <span className="w-px h-3 bg-text-secondary/40 group-hover:bg-accent/60" />
-                <span className="w-px h-3 bg-text-secondary/40 group-hover:bg-accent/60" />
-              </Stack>
-            </Stack>
-          )}
-
           {/* Traveler Sidebar Column */}
-          {!isCollapsed && (
-            <Stack
-              style={{ width: isLargeScreen ? `${width}px` : "100%" }}
-              className="w-full lg:w-auto lg:shrink-0"
+          <Stack
+            className={cn(
+              "w-full lg:w-[360px] lg:shrink-0",
+              isCollapsed ? "lg:hidden" : "lg:block",
+              isMobileOpen ? "block" : "hidden"
+            )}
+          >
+            <Card 
+              className="bg-bg-surface border-border-default h-full max-h-180 flex flex-col lg:min-w-70 w-full"
             >
-              <Card 
-                className="bg-bg-surface border-border-default h-full max-h-180 flex flex-col lg:min-w-70 w-full"
-              >
-                <Stack gap={4} className="p-5 border-b border-border-default">
-                  <Stack direction="row" align="center" justify="between">
-                    <Stack direction="row" align="center" gap={2}>
-                      <Users className="size-4 text-accent" />
-                      <Text variant="heading" size="base" className="font-semibold text-accent">
-                        Traveler Profiles
-                      </Text>
-                    </Stack>
-                    <Clickable
-                      onClick={() => setIsCollapsed(true)}
-                      className="p-1 rounded hover:bg-bg-surface-raised text-text-secondary hover:text-text-primary"
-                      title="Collapse sidebar"
-                    >
-                      <ChevronRight className="size-4" />
-                    </Clickable>
+              <Stack gap={4} className="p-5 border-b border-border-default">
+                <Stack direction="row" align="center" justify="between">
+                  <Stack direction="row" align="center" gap={2}>
+                    <Users className="size-4 text-accent" />
+                    <Text variant="heading" size="base" className="font-semibold text-accent">
+                      Traveler Profiles
+                    </Text>
                   </Stack>
+                  <Clickable
+                    onClick={() => {
+                      setIsCollapsed(true);
+                      setIsMobileOpen(false);
+                    }}
+                    className="p-1 rounded hover:bg-bg-surface-raised text-text-secondary hover:text-text-primary"
+                    title="Collapse sidebar"
+                  >
+                    <ChevronRight className="size-4" />
+                  </Clickable>
+                </Stack>
 
                   <Text variant="subtext" size="xs">
                     Select any traveler to load preferences. Drag the divider to resize.
@@ -203,7 +199,7 @@ export default function ComposerPage() {
                                   Age {u.age} · {u.preferred_cabin}
                                 </Text>
                               </Stack>
-                              <Stack className="flex flex-wrap gap-1 mt-1 text-[10px]">
+                              <Stack direction="row" className="flex-wrap gap-1 mt-1 text-[10px]">
                                 <span className="bg-bg-base border border-border-default px-1.5 py-0.5 rounded text-text-secondary">
                                   Price: {u.price_sensitivity}
                                 </span>
@@ -223,7 +219,6 @@ export default function ComposerPage() {
                 </Stack>
               </Card>
             </Stack>
-          )}
         </Stack>
       </Container>
     </Stack>
