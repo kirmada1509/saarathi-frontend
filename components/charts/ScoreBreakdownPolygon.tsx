@@ -35,7 +35,7 @@ export function ScoreBreakdownPolygon({
     .filter(([key]) => key in SHORT_LABELS)
     .map(([key, value]) => ({
       dimension: SHORT_LABELS[key],
-      score: Math.round(value * 1000) / 1000,
+      score: Math.round(value * 100),
     }));
 
   return (
@@ -56,8 +56,7 @@ export function ScoreBreakdownPolygon({
           strokeWidth={2}
         />
         <PolarRadiusAxis
-          domain={[0, 1]}
-          ticks={[0.25, 0.5, 0.75, 1.0] as unknown as Parameters<typeof PolarRadiusAxis>[0]["ticks"]}
+          domain={[0, 100]}
           angle={45}
           tick={false}
           axisLine={false}

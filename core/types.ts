@@ -150,4 +150,5 @@ export interface RecommendResponse {
   explanation: string;
   itinerary?: MultiCityItinerary;
   appliedPerturbations: Perturbation[];
+  warnings?: string[];
 }

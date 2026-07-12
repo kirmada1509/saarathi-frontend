@@ -189,7 +189,7 @@ export function AddTravelerDialog({
               required
             />
             <span className="text-[10px] text-text-secondary leading-normal block">
-              Exercises the preference inference engine (regex + embeddings).
+              Exercises the preference inference engine (LLM with regex + embeddings fallback).
             </span>
           </div>
 

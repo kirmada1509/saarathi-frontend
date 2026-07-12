@@ -120,6 +120,62 @@ export default async function Home() {
           </Container>
         </Section>
       )}
+
+      {/* Submission Details Section */}
+      <Section spacing="lg" className="border-t border-border-default/40 mt-10 pb-16">
+        <Container className="max-w-3xl">
+          <Card className="bg-bg-surface-raised/40 border border-border-default/60 p-6 rounded-xl">
+            <Stack gap={4}>
+              <Text variant="heading" size="lg" className="font-semibold text-text-primary">
+                Submission Information
+              </Text>
+              
+              <Stack className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm" gap={0}>
+                {/* Author Info */}
+                <Stack gap={2}>
+                  <Text variant="body" size="sm" className="font-semibold text-text-primary">
+                    Candidate Profile
+                  </Text>
+                  <Stack gap={1} className="text-text-secondary text-xs">
+                    <Text><strong>Name:</strong> Mohan Krishna</Text>
+                    <Text><strong>University:</strong> BITS Pilani, Pilani Campus</Text>
+                    <Text><strong>Email:</strong> <a href="mailto:f20240732@pilani.bits-pilani.ac.in" className="text-accent hover:underline">f20240732@pilani.bits-pilani.ac.in</a></Text>
+                    <Text><strong>Phone:</strong> +91 6302539619</Text>
+                    <Text><strong>LinkedIn:</strong> <a href="https://www.linkedin.com/in/mohan-krishna-karthik/" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">mohan-kishna-karthik</a></Text>
+                  </Stack>
+                </Stack>
+
+                {/* GitHub links */}
+                <Stack gap={2}>
+                  <Text variant="body" size="sm" className="font-semibold text-text-primary">
+                    Project Repositories
+                  </Text>
+                  <Stack gap={2} className="text-text-secondary text-xs">
+                    <Text>
+                      <strong>Backend:</strong>{" "}
+                      <a href="https://github.com/kirmada1509/saarathi-backend" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline font-mono">
+                        kirmada1509/saarathi-backend
+                      </a>
+                    </Text>
+                    <Text>
+                      <strong>Frontend:</strong>{" "}
+                      <a href="https://github.com/kirmada1509/saarathi-frontend" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline font-mono">
+                        kirmada1509/saarathi-frontend
+                      </a>
+                    </Text>
+                    <Text>
+                      <strong>Docs:</strong>{" "}
+                      <a href="https://github.com/kirmada1509/saarathi-docs" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline font-mono">
+                        kirmada1509/saarathi-docs
+                      </a>
+                    </Text>
+                  </Stack>
+                </Stack>
+              </Stack>
+            </Stack>
+          </Card>
+        </Container>
+      </Section>
     </Stack>
   );
 }

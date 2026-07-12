@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card, Stack, Field, Text } from "@/components/ui/primitives";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 import { buildDecisionQuery } from "@/lib/decision-params";
 import { getBenchmarkQuery } from "@/lib/benchmark-queries";
 import { parseRoute } from "@/lib/api";
@@ -108,6 +109,12 @@ export function RequestForm({
       const res = await parseRoute({ userId: selectedUserId, requestText });
       setIsAnalyzing(false);
 
+      if (res.warnings) {
+        res.warnings.forEach((warning) => {
+          toast.warning(warning, { id: warning });
+        });
+      }
+
       if (res.mode === "single") {
         // Direct redirect for single-leg
         const query = buildDecisionQuery({
@@ -127,7 +134,9 @@ export function RequestForm({
       }
     } catch (err) {
       setIsAnalyzing(false);
-      setError(err instanceof Error ? err.message : "Failed to resolve route from description.");
+      const msg = err instanceof Error ? err.message : "Failed to resolve route from description.";
+      setError(msg);
+      toast.error(msg);
     }
   }
 

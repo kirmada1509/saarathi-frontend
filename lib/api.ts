@@ -71,6 +71,7 @@ export interface InferredRouteResponse {
   placeNames: Record<string, string>;
   /** The home airport code that acts as the return leg — not shown as an editable stop. */
   returnCity?: string;
+  warnings?: string[];
 }
 
 export async function parseRoute(payload: {

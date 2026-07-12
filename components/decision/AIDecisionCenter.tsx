@@ -135,12 +135,16 @@ function SensitivityTab({
   hasVerdict,
   onToggle,
   onClear,
+  originalVerdict,
+  currentVerdict,
 }: {
   counterfactuals: Counterfactual[];
   activePerturbations: Perturbation[];
   hasVerdict: boolean;
   onToggle: (p: Perturbation) => void;
   onClear: () => void;
+  originalVerdict: import("@/core/types").ScoredFlight | null;
+  currentVerdict: import("@/core/types").ScoredFlight | null;
 }) {
   const isActive = (p: Perturbation) =>
     activePerturbations.some((item) => perturbationsEqual(item, p));
@@ -150,6 +154,103 @@ function SensitivityTab({
 
   return (
     <Stack gap={6}>
+      {activePerturbations.length > 0 && (
+        <Card className="bg-accent/5 border border-accent/20 p-4 rounded-xl">
+          <Stack gap={4}>
+            <Stack direction="row" align="center" justify="between" gap={3} className="border-b border-border-default/40 pb-2">
+              <Stack direction="row" align="center" gap={2}>
+                <Sparkles className="w-4 h-4 text-accent animate-pulse" />
+                <Text variant="heading" size="xs" className="text-accent uppercase tracking-wider font-semibold">
+                  Simulation Comparison
+                </Text>
+              </Stack>
+              {originalVerdict && currentVerdict && originalVerdict.flight_id === currentVerdict.flight_id ? (
+                <Badge variant="default" className="text-[10px] bg-bg-surface-raised border border-border-default text-text-secondary select-none">
+                  Unchanged
+                </Badge>
+              ) : (
+                <Badge variant="warning" className="text-[10px] select-none animate-pulse">
+                  Recommendation Flipped
+                </Badge>
+              )}
+            </Stack>
+
+            {originalVerdict && currentVerdict && originalVerdict.flight_id === currentVerdict.flight_id ? (
+              <Text variant="body" size="xs" className="text-text-secondary font-medium leading-relaxed">
+                The recommended flight remains unchanged under this scenario.
+              </Text>
+            ) : (
+              <Text variant="body" size="xs" className="text-accent font-semibold leading-relaxed">
+                The recommendation flipped from the original choice to a new optimal option!
+              </Text>
+            )}
+
+            <Stack className="grid grid-cols-1 md:grid-cols-3 gap-4" gap={0}>
+              {/* Original Flight */}
+              <Stack gap={1} className="bg-bg-surface-raised/40 p-3 rounded-lg border border-border-default/60">
+                <Text variant="subtext" size="xs" className="uppercase font-mono text-[10px]">Original Flight</Text>
+                {originalVerdict ? (
+                  <Stack gap={1}>
+                    <Text variant="body" size="sm" className="font-bold text-text-primary">
+                      {originalVerdict.airline_name} {originalVerdict.flight_numbers}
+                    </Text>
+                    <Text variant="subtext" size="xs">
+                      {originalVerdict.stops === 0 ? "Nonstop" : `${originalVerdict.stops} stop(s)`} · ${originalVerdict.price}
+                    </Text>
+                  </Stack>
+                ) : (
+                  <Text variant="body" size="sm" className="italic text-text-secondary">No matching flight</Text>
+                )}
+              </Stack>
+
+              {/* Perturbation Details */}
+              <Stack gap={1} className="bg-bg-surface-raised/40 p-3 rounded-lg border border-border-default/60 justify-center">
+                <Text variant="subtext" size="xs" className="uppercase font-mono text-[10px]">Applied Scenario</Text>
+                <Stack gap={1}>
+                  {activePerturbations.map((p, idx) => {
+                    let desc = "";
+                    if (p.kind === "price_drop") {
+                      desc = `Price for flight ${p.flightId.substring(0, 6)} drops to $${p.toPrice}`;
+                    } else if (p.kind === "accept_one_stop") {
+                      desc = "Willing to accept 1-stop flights";
+                    } else if (p.kind === "bags_matter") {
+                      desc = "Baggage inclusion is required";
+                    } else if (p.kind === "evening_ok") {
+                      desc = "Evening departures acceptable";
+                    } else if (p.kind === "ignore_loyalty") {
+                      desc = "Ignoring loyalty preferences";
+                    } else if (p.kind === "shift_dates") {
+                      desc = `Shift travel dates by ${p.days} day(s)`;
+                    }
+                    return (
+                      <Text key={idx} variant="body" size="sm" className="font-medium text-accent">
+                        • {desc}
+                      </Text>
+                    );
+                  })}
+                </Stack>
+              </Stack>
+
+              {/* New Flight */}
+              <Stack gap={1} className="bg-bg-surface-raised/40 p-3 rounded-lg border border-border-default/60">
+                <Text variant="subtext" size="xs" className="uppercase font-mono text-[10px]">New Recommendation</Text>
+                {currentVerdict ? (
+                  <Stack gap={1}>
+                    <Text variant="body" size="sm" className="font-bold text-accent">
+                      {currentVerdict.airline_name} {currentVerdict.flight_numbers}
+                    </Text>
+                    <Text variant="subtext" size="xs" className="text-text-primary">
+                      {currentVerdict.stops === 0 ? "Nonstop" : `${currentVerdict.stops} stop(s)`} · ${currentVerdict.price}
+                    </Text>
+                  </Stack>
+                ) : (
+                  <Text variant="body" size="sm" className="italic text-signal-negative">No flight fits constraints</Text>
+                )}
+              </Stack>
+            </Stack>
+          </Stack>
+        </Card>
+      )}
       <Stack direction="row" align="center" justify="between" gap={3} className="flex-wrap">
         <Text variant="subtext" size="sm">
           Toggle scenarios below to simulate how changing your preferences or constraints would affect the recommendation. Active scenarios recalculate the result instantly.
@@ -285,6 +386,7 @@ interface AIDecisionCenterProps {
   activePerturbations: Perturbation[];
   onToggle: (p: Perturbation) => void;
   onClear: () => void;
+  originalVerdict: import("@/core/types").ScoredFlight | null;
 }
 
 export function AIDecisionCenter({
@@ -292,6 +394,7 @@ export function AIDecisionCenter({
   activePerturbations,
   onToggle,
   onClear,
+  originalVerdict,
 }: AIDecisionCenterProps) {
   const [activeTab, setActiveTab] = useState<TabId>("profile");
 
@@ -363,6 +466,8 @@ export function AIDecisionCenter({
                   hasVerdict={!!activeResponse.verdict}
                   onToggle={onToggle}
                   onClear={onClear}
+                  originalVerdict={originalVerdict}
+                  currentVerdict={activeResponse.verdict}
                 />
               )}
             </motion.div>

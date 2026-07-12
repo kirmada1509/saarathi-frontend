@@ -31,13 +31,39 @@ interface Props {
   onScrollToAlternatives: () => void;
 }
 
+const SPINNER_VERBS = [
+  "Inverting flight scoring parameters...",
+  "Re-ranking candidate flights...",
+  "Inference of preferences in progress...",
+  "Simulating active counterfactuals...",
+  "Estimating recommendation margins...",
+  "Generating plain-English strategist justification...",
+  "Validating connection stay constraints...",
+  "Checking for holiday demand peaks...",
+  "Synthesizing final routing footprints...",
+  "Assessing multi-city routing order permutations...",
+  "Evaluating layover cost trade-offs..."
+];
+
 export function ExecutiveSummary({ response, activeResponse, isLoading, user, onScrollToAlternatives }: Props) {
+  const [verbIndex, setVerbIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!isLoading) return;
+    const interval = setInterval(() => {
+      setVerbIndex((prev) => (prev + 1) % SPINNER_VERBS.length);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isLoading]);
+
   if (isLoading) {
     return (
       <Stack className="rounded-2xl border border-border-default bg-bg-surface overflow-hidden">
         <Stack className="h-70 animate-pulse bg-bg-surface-raised/50 items-center justify-center" align="center" justify="center" gap={3}>
           <span className="w-10 h-10 border-4 border-accent border-t-transparent rounded-full animate-spin" />
-          <Text variant="subtext" size="sm">AI decision engine running…</Text>
+          <Text variant="mono" size="sm" className="text-accent animate-pulse font-medium text-center px-6">
+            {SPINNER_VERBS[verbIndex]}
+          </Text>
         </Stack>
       </Stack>
     );
