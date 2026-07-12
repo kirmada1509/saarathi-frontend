@@ -101,7 +101,13 @@ export function CityChainBuilder({
                       }}
                       className="w-12 h-7 rounded border border-border-default bg-bg-surface text-center text-xs text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
                     />
-                    <Text variant="subtext" size="xs">nights</Text>
+                    <Text variant="subtext" size="xs">
+                      {(stayDurations[code] ?? 0) === 0
+                        ? "same day departure"
+                        : (stayDurations[code] ?? 0) === 1
+                        ? "night"
+                        : "nights"}
+                    </Text>
                   </Stack>
                 )}
               </Stack>

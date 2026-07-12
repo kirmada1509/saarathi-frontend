@@ -145,19 +145,25 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
                 <Stack direction="row" align="center" gap={2}>
                   <input
                     type="number"
-                    min={1}
+                    min={0}
                     max={30}
                     value={inferredStayDurations[code] ?? 2}
                     onChange={(e) => {
-                      const val = parseInt(e.target.value, 10) || 1;
+                      const val = parseInt(e.target.value, 10) || 0;
                       setInferredStayDurations({
                         ...inferredStayDurations,
-                        [code]: Math.max(1, val),
+                        [code]: Math.max(0, val),
                       });
                     }}
                     className="w-12 h-7 rounded border border-border-default bg-bg-base text-center text-xs text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
                   />
-                  <Text variant="subtext" size="xs">nights</Text>
+                  <Text variant="subtext" size="xs">
+                    {(inferredStayDurations[code] ?? 2) === 0
+                      ? "same day departure"
+                      : (inferredStayDurations[code] ?? 2) === 1
+                      ? "night"
+                      : "nights"}
+                  </Text>
                 </Stack>
               </Stack>
             ))}
