@@ -41,3 +41,22 @@ export async function fetchRecommendation(
   });
   return parseJsonOrThrow<RecommendResponse>(res);
 }
+
+export interface InferredRouteResponse {
+  mode: "single" | "multi";
+  destination?: string;
+  cities?: string[];
+  stayDurations: Record<string, number>;
+}
+
+export async function parseRoute(payload: {
+  userId: string;
+  requestText: string;
+}): Promise<InferredRouteResponse> {
+  const res = await fetch(`${API_BASE_URL}/api/recommend/parse-route`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return parseJsonOrThrow<InferredRouteResponse>(res);
+}

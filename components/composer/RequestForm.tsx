@@ -2,14 +2,13 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Card, Stack, Field, Text, Clickable } from "@/components/ui/primitives";
+import { Card, Stack, Field, Text, Badge } from "@/components/ui/primitives";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { CityChainBuilder } from "./CityChainBuilder";
 import { buildDecisionQuery } from "@/lib/decision-params";
 import { getBenchmarkQuery } from "@/lib/benchmark-queries";
-import { Route as RouteIcon } from "lucide-react";
+import { parseRoute } from "@/lib/api";
+import { Route as RouteIcon, Sparkles } from "lucide-react";
 import { useUsers } from "@/lib/queries";
 
 export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
@@ -18,26 +17,20 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
   const activeUser = users.find((u) => u.user_id === selectedUserId);
 
   const [requestText, setRequestText] = React.useState("");
-  const [destination, setDestination] = React.useState("");
-  const [cities, setCities] = React.useState<string[]>([]);
-  const [stayDurations, setStayDurations] = React.useState<Record<string, number>>({});
-  const [routeMode, setRouteMode] = React.useState<"single" | "multi">("single");
   const [error, setError] = React.useState<string | null>(null);
+  
+  // Inline confirmation state variables
+  const [isAnalyzing, setIsAnalyzing] = React.useState(false);
+  const [showStaysConfirmation, setShowStaysConfirmation] = React.useState(false);
+  const [inferredCities, setInferredCities] = React.useState<string[]>([]);
+  const [inferredStayDurations, setInferredStayDurations] = React.useState<Record<string, number>>({});
 
   // Sync state whenever selectedUserId is changed from the parent sidebar
   React.useEffect(() => {
     if (selectedUserId) {
       const seed = getBenchmarkQuery(selectedUserId);
       setError(null);
-
-      // Pre-fill stay durations for multi-city cities (e.g. 2 nights per city as default)
-      const initialStays: Record<string, number> = {};
-      if (seed.cities.length > 0) {
-        seed.cities.forEach((city) => {
-          initialStays[city] = 2;
-        });
-      }
-      setStayDurations(initialStays);
+      setShowStaysConfirmation(false);
 
       if (seed.requestText !== "Find me flights.") {
         setRequestText(seed.requestText);
@@ -49,21 +42,10 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
           setRequestText("Find me flights.");
         }
       }
-
-      // Pre-populate manual controls
-      if (seed.cities.length > 0) {
-        setCities(seed.cities);
-        setDestination("");
-        setRouteMode("multi");
-      } else {
-        setCities([]);
-        setDestination(seed.destination || "");
-        setRouteMode("single");
-      }
     }
   }, [selectedUserId, users]);
 
-  function onSubmit(e: React.FormEvent) {
+  async function handlePlanItinerary(e: React.FormEvent) {
     e.preventDefault();
     if (!selectedUserId) {
       setError("Pick a traveler first.");
@@ -74,39 +56,140 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
       return;
     }
 
-    let resolvedDestination: string | undefined = undefined;
-    let resolvedCities: string[] | undefined = undefined;
-    let resolvedStayDurations: Record<string, number> | undefined = undefined;
-
-    if (routeMode === "single") {
-      if (!destination || destination.length < 3) {
-        setError("Enter a valid 3-letter IATA destination code.");
-        return;
-      }
-      resolvedDestination = destination.toUpperCase();
-    } else {
-      if (cities.length < 2) {
-        setError("Add at least two cities to build a route.");
-        return;
-      }
-      resolvedCities = cities;
-      resolvedStayDurations = stayDurations;
-    }
-
+    setIsAnalyzing(true);
     setError(null);
+
+    try {
+      const res = await parseRoute({ userId: selectedUserId, requestText });
+      setIsAnalyzing(false);
+
+      if (res.mode === "single") {
+        // Direct redirect for single-leg
+        const query = buildDecisionQuery({
+          userId: selectedUserId,
+          requestText,
+          destination: res.destination || undefined,
+        });
+        router.push(`/app/decision?${query}`);
+      } else {
+        // Multi-city: intercept flow and ask for stays confirmation
+        setInferredCities(res.cities || []);
+        setInferredStayDurations(res.stayDurations || {});
+        setShowStaysConfirmation(true);
+      }
+    } catch (err) {
+      setIsAnalyzing(false);
+      setError(err instanceof Error ? err.message : "Failed to resolve route from description.");
+    }
+  }
+
+  function handleConfirmFlights() {
+    if (inferredCities.length < 2) {
+      setError("At least two cities are required for a multi-city route.");
+      return;
+    }
     const query = buildDecisionQuery({
       userId: selectedUserId,
       requestText,
-      destination: resolvedDestination,
-      cities: resolvedCities,
-      stayDurations: resolvedStayDurations,
+      cities: inferredCities,
+      stayDurations: inferredStayDurations,
     });
     router.push(`/app/decision?${query}`);
   }
 
+  if (showStaysConfirmation) {
+    return (
+      <Card className="bg-bg-surface border-border-default relative overflow-hidden">
+        <span className="absolute top-0 left-0 w-1.5 h-full bg-accent" />
+        <Stack gap={5} className="pl-2">
+          {/* Header */}
+          <Stack gap={1}>
+            <Stack direction="row" align="center" gap={2}>
+              <Sparkles className="size-5 text-accent animate-pulse" />
+              <Text variant="heading" size="lg" className="text-text-primary font-bold">
+                Confirm Stay Durations
+              </Text>
+            </Stack>
+            <Text variant="body" size="sm" className="text-text-secondary">
+              We detected a multi-city route. Please configure how many nights you want to spend at each destination:
+            </Text>
+          </Stack>
+
+          {/* Active Traveler Summary */}
+          {activeUser && (
+            <div className="bg-bg-surface-raised/40 p-3 rounded border border-border-default text-xs text-text-secondary">
+              Traveler Profile: <strong className="text-text-primary">{activeUser.user_id}</strong> · Home Base: <strong className="text-text-primary">{activeUser.home_city} ({activeUser.home_airport})</strong>
+            </div>
+          )}
+
+          {/* City sequence list */}
+          <Stack gap={3} className="border border-border-default rounded-lg p-4 bg-bg-surface-raised/20">
+            {inferredCities.map((code, index) => (
+              <Stack
+                key={`${code}-${index}`}
+                direction="row"
+                align="center"
+                justify="between"
+                className="border border-border-default rounded-md px-3 py-2 bg-bg-surface"
+              >
+                <Stack direction="row" align="center" gap={3}>
+                  <Badge variant="default">{index + 1}</Badge>
+                  <Text variant="mono" size="sm" weight="bold">{code}</Text>
+                </Stack>
+
+                <Stack direction="row" align="center" gap={2}>
+                  <input
+                    type="number"
+                    min={1}
+                    max={30}
+                    value={inferredStayDurations[code] ?? 2}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10) || 1;
+                      setInferredStayDurations({
+                        ...inferredStayDurations,
+                        [code]: Math.max(1, val),
+                      });
+                    }}
+                    className="w-12 h-7 rounded border border-border-default bg-bg-base text-center text-xs text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
+                  />
+                  <Text variant="subtext" size="xs">nights</Text>
+                </Stack>
+              </Stack>
+            ))}
+          </Stack>
+
+          {error && (
+            <Text variant="subtext" size="xs" className="text-signal-negative font-medium">
+              {error}
+            </Text>
+          )}
+
+          {/* Action buttons */}
+          <Stack direction="row" gap={3} className="pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowStaysConfirmation(false)}
+              className="flex-1"
+            >
+              Edit Prompt
+            </Button>
+            <Button
+              type="button"
+              onClick={handleConfirmFlights}
+              className="flex-1 bg-accent text-text-on-accent hover:bg-accent-hover"
+            >
+              Optimize Itinerary →
+            </Button>
+          </Stack>
+        </Stack>
+      </Card>
+    );
+  }
+
   return (
     <Card className="bg-bg-surface border-border-default">
-      <form onSubmit={onSubmit}>
+      <form onSubmit={handlePlanItinerary}>
         <Stack gap={5}>
           {/* Active Traveler Indicator Card */}
           {activeUser && (
@@ -149,64 +232,10 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
             <Textarea
               value={requestText}
               onChange={(e) => setRequestText(e.target.value)}
-              rows={4}
+              rows={5}
               placeholder="e.g. I want to visit London for 3 days, Paris for 2 days, and Rome for 4 nights."
             />
           </Field>
-
-          {/* Inline Route Configuration */}
-          <Stack gap={4} className="border border-border-default rounded-lg p-4 bg-bg-surface-raised/20">
-            <Stack direction="row" align="center" justify="between" className="border-b border-border-default pb-2 flex-wrap gap-2">
-              <Text variant="heading" size="sm" className="font-semibold text-text-primary">
-                Route & Stay Details
-              </Text>
-              <div className="flex gap-2">
-                <Clickable
-                  type="button"
-                  onClick={() => setRouteMode("single")}
-                  className={`px-3 py-1 rounded text-xs font-semibold transition-colors cursor-pointer ${
-                    routeMode === "single"
-                      ? "bg-accent text-text-on-accent"
-                      : "bg-bg-base border border-border-default text-text-secondary hover:text-text-primary"
-                  }`}
-                >
-                  Single Destination
-                </Clickable>
-                <Clickable
-                  type="button"
-                  onClick={() => setRouteMode("multi")}
-                  className={`px-3 py-1 rounded text-xs font-semibold transition-colors cursor-pointer ${
-                    routeMode === "multi"
-                      ? "bg-accent text-text-on-accent"
-                      : "bg-bg-base border border-border-default text-text-secondary hover:text-text-primary"
-                  }`}
-                >
-                  Multi-City Route
-                </Clickable>
-              </div>
-            </Stack>
-
-            {routeMode === "single" ? (
-              <Field label="Destination Airport" hint="3-letter IATA code, e.g. JFK or NRT">
-                <Input
-                  value={destination}
-                  onChange={(e) => setDestination(e.target.value.toUpperCase())}
-                  placeholder="JFK"
-                  className="uppercase font-mono w-32"
-                  maxLength={3}
-                />
-              </Field>
-            ) : (
-              <Field label="City Sequence & Nights of Stay" hint="Specify the nights to stay in each intermediate city.">
-                <CityChainBuilder
-                  cities={cities}
-                  onChange={setCities}
-                  stayDurations={stayDurations}
-                  onStayDurationsChange={setStayDurations}
-                />
-              </Field>
-            )}
-          </Stack>
 
           {error && (
             <Text variant="subtext" size="xs" className="text-signal-negative font-medium">
@@ -216,9 +245,19 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
 
           <Button
             type="submit"
+            disabled={isAnalyzing}
             className="bg-accent text-text-on-accent hover:bg-accent-hover w-full sm:w-auto"
           >
-            <RouteIcon className="size-4" /> Plan the itinerary
+            {isAnalyzing ? (
+              <>
+                <span className="w-4 h-4 border-2 border-text-on-accent border-t-transparent rounded-full animate-spin mr-2" />
+                Analyzing route...
+              </>
+            ) : (
+              <>
+                <RouteIcon className="size-4" /> Plan the itinerary
+              </>
+            )}
           </Button>
         </Stack>
       </form>
