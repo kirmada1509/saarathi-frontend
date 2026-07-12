@@ -53,18 +53,6 @@ export function TopNav() {
           </Stack>
 
           <Stack direction="row" align="center" gap={2}>
-            <Button
-              variant="outline"
-              size="sm"
-              className="hidden sm:inline-flex text-text-secondary"
-              onClick={() => setCommandPaletteOpen(true)}
-            >
-              <Search className="size-3.5" />
-              <Text variant="subtext" size="xs" className="font-mono">
-                ⌘K
-              </Text>
-            </Button>
-
             {mounted && (
               <Button
                 variant="ghost"

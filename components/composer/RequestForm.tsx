@@ -14,15 +14,27 @@ import { useUsers } from "@/lib/queries";
 export function RequestForm({
   selectedUserId,
   onStaysConfirmationChange,
+  requestText: externalRequestText,
+  setRequestText: externalSetRequestText,
 }: {
   selectedUserId: string;
   onStaysConfirmationChange?: (show: boolean) => void;
+  requestText?: string;
+  setRequestText?: (val: string) => void;
 }) {
   const router = useRouter();
   const { data: users = [] } = useUsers();
   const activeUser = users.find((u) => u.user_id === selectedUserId);
 
-  const [requestText, setRequestText] = React.useState("");
+  const [localRequestText, localSetRequestText] = React.useState("");
+  const requestText = externalRequestText !== undefined ? externalRequestText : localRequestText;
+  const setRequestText = React.useCallback((val: string) => {
+    if (externalSetRequestText) {
+      externalSetRequestText(val);
+    } else {
+      localSetRequestText(val);
+    }
+  }, [externalSetRequestText]);
   const [error, setError] = React.useState<string | null>(null);
   
   // Inline confirmation state variables

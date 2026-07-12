@@ -31,6 +31,26 @@ export async function fetchUsers(): Promise<UserSummary[]> {
   return parseJsonOrThrow<UserSummary[]>(res);
 }
 
+export interface CreateUserPayload {
+  home_airport: string;
+  price_sensitivity: "low" | "medium" | "high" | "none";
+  direct_preference: "strong" | "moderate" | "none";
+  preferred_cabin: string;
+  preferred_airlines?: string;
+  raw_history: string;
+}
+
+export async function createUser(
+  payload: CreateUserPayload
+): Promise<UserSummary> {
+  const res = await fetch(`${API_BASE_URL}/api/users`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return parseJsonOrThrow<UserSummary>(res);
+}
+
 export async function fetchRecommendation(
   payload: RecommendPayload
 ): Promise<RecommendResponse> {

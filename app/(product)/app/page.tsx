@@ -5,10 +5,21 @@ import { Container, Stack, Text, GradientMotif, Card, Clickable, Skeleton } from
 import { RequestForm } from "@/components/composer/RequestForm";
 import { useUsers } from "@/lib/queries";
 import { getBenchmarkQuery } from "@/lib/benchmark-queries";
-import { Check, Search, Users, ChevronRight } from "lucide-react";
+import { Check, Search, Users, ChevronRight, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { AddTravelerDialog } from "@/components/travelers/AddTravelerDialog";
+import { parseRoute } from "@/lib/api";
+import { buildDecisionQuery } from "@/lib/decision-params";
+import type { UserSummary } from "@/lib/types";
 
 export default function ComposerPage() {
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  const [addDialogOpen, setAddDialogOpen] = React.useState(false);
+  const [requestText, setRequestText] = React.useState("");
+
   // Lazy initializers — read from browser APIs once, no setState-in-effect
   const [selectedUserId, setSelectedUserId] = React.useState(() => {
     if (typeof window === "undefined") return "U01";
@@ -20,6 +31,49 @@ export default function ComposerPage() {
   const isFirstRenderRef = React.useRef(true);
 
   const { data: users = [], isLoading } = useUsers();
+
+  const handleAddTravelerSuccess = React.useCallback(async (newUser: UserSummary) => {
+    // 1. Invalidate query so the new traveler appears in the list
+    await queryClient.invalidateQueries({ queryKey: ["users"] });
+
+    // 2. Select the new traveler
+    setSelectedUserId(newUser.user_id);
+    localStorage.setItem("saarathi_selected_user_id", newUser.user_id);
+
+    // 3. Immediately trigger a recommendation request for that new user
+    const text = requestText.trim().length >= 10
+      ? requestText.trim()
+      : `I want to find a flight from ${newUser.home_airport} to LHR`;
+
+    setRequestText(text);
+
+    try {
+      const res = await parseRoute({ userId: newUser.user_id, requestText: text });
+      if (res.mode === "single") {
+        const query = buildDecisionQuery({
+          userId: newUser.user_id,
+          requestText: text,
+          origin: res.origin || undefined,
+          destination: res.destination || undefined,
+        });
+        router.push(`/app/decision?${query}`);
+      } else {
+        const query = buildDecisionQuery({
+          userId: newUser.user_id,
+          requestText: text,
+          cities: res.cities || [],
+          stayDurations: res.stayDurations || {},
+        });
+        router.push(`/app/decision?${query}`);
+      }
+    } catch (err) {
+      const query = buildDecisionQuery({
+        userId: newUser.user_id,
+        requestText: text,
+      });
+      router.push(`/app/decision?${query}`);
+    }
+  }, [queryClient, router, requestText]);
 
   // Load sidebar collapse preference on desktop on mount
   React.useEffect(() => {
@@ -94,6 +148,8 @@ export default function ComposerPage() {
               </Stack>
               <RequestForm
                 selectedUserId={selectedUserId}
+                requestText={requestText}
+                setRequestText={setRequestText}
                 onStaysConfirmationChange={(show) => {
                   if (show) {
                     setIsCollapsed(true);
@@ -116,23 +172,33 @@ export default function ComposerPage() {
               className="bg-bg-surface border-border-default h-full max-h-180 flex flex-col lg:min-w-70 w-full"
             >
               <Stack gap={4} className="p-5 border-b border-border-default">
-                <Stack direction="row" align="center" justify="between">
+                <Stack direction="row" align="center" justify="between" className="w-full">
                   <Stack direction="row" align="center" gap={2}>
                     <Users className="size-4 text-accent" />
-                    <Text variant="heading" size="base" className="font-semibold text-accent">
+                    <Text variant="heading" size="base" className="font-semibold text-accent whitespace-nowrap">
                       Traveler Profiles
                     </Text>
                   </Stack>
-                  <Clickable
-                    onClick={() => {
-                      setIsCollapsed(true);
-                      setIsMobileOpen(false);
-                    }}
-                    className="p-1 rounded hover:bg-bg-surface-raised text-text-secondary hover:text-text-primary"
-                    title="Collapse sidebar"
-                  >
-                    <ChevronRight className="size-4" />
-                  </Clickable>
+                  <Stack direction="row" align="center" gap={1} className="ml-auto">
+                    <Clickable
+                      onClick={() => setAddDialogOpen(true)}
+                      className="p-1 rounded hover:bg-bg-surface-raised text-accent hover:text-accent font-semibold flex items-center gap-1 text-xs border border-accent/20 px-2 py-0.5 cursor-pointer"
+                      title="Add test traveler"
+                    >
+                      <UserPlus className="size-3.5" />
+                      <span>Add</span>
+                    </Clickable>
+                    <Clickable
+                      onClick={() => {
+                        setIsCollapsed(true);
+                        setIsMobileOpen(false);
+                      }}
+                      className="p-1 rounded hover:bg-bg-surface-raised text-text-secondary hover:text-text-primary cursor-pointer"
+                      title="Collapse sidebar"
+                    >
+                      <ChevronRight className="size-4" />
+                    </Clickable>
+                  </Stack>
                 </Stack>
 
                   <Text variant="subtext" size="xs">
@@ -221,6 +287,11 @@ export default function ComposerPage() {
             </Stack>
         </Stack>
       </Container>
+      <AddTravelerDialog
+        open={addDialogOpen}
+        onOpenChange={setAddDialogOpen}
+        onSuccess={handleAddTravelerSuccess}
+      />
     </Stack>
   );
 }

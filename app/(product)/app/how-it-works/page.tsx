@@ -127,8 +127,13 @@ sequenceDiagram
 
   Client->>C: POST /api/recommend (payload)
   C->>RS: getRecommendation(data)
-  RS->>IP: inferPreferences(user, requestText)
-  IP-->>RS: basePref
+  RS->>CTX: inferPreferences(user, requestText)
+  alt LLM Inference succeeds
+    CTX-->>RS: basePref
+  else LLM fails / offline
+    RS->>IP: inferPreferences(user, requestText)
+    IP-->>RS: basePref
+  end
   RS->>AP: applyPerturbations(basePref, perturbations)
   AP-->>RS: perturbedPref
   Note over RS,RP: If route missing, infer destination
@@ -169,8 +174,13 @@ sequenceDiagram
 
   Client->>C: POST /api/recommend (payload)
   C->>RS: getRecommendation(data)
-  RS->>IP: inferPreferences(user, requestText)
-  IP-->>RS: basePref
+  RS->>CTX: inferPreferences(user, requestText)
+  alt LLM Inference succeeds
+    CTX-->>RS: basePref
+  else LLM fails / offline
+    RS->>IP: inferPreferences(user, requestText)
+    IP-->>RS: basePref
+  end
   RS->>AP: applyPerturbations(basePref, perturbations)
   AP-->>RS: perturbedPref
   Note over RS,RP: If cities or stay durations missing
@@ -225,7 +235,7 @@ graph TD
 const getAiBoundaryChart = (c: ColorsConfig) => `
 graph TD
   subgraph AI Input/Output Schema
-    Request[Request Rationale & Parse Route] -->|user_id, requestText| CortexService[CortexService]
+    Request[Request Rationale, Parse Route & Infer Preferences] -->|user_id, requestText| CortexService[CortexService]
     CortexService -->|API Call| Groq[Groq API: llama-3.3-70b-versatile]
   end
 
@@ -240,6 +250,13 @@ graph TD
     RouteParserFallback -->|parseStayDurationsFromText| RegexNights[Regex match stay durations e.g., '3 nights in LHR']
   end
 
+  subgraph inferPreferences Fallback Path
+    GroqFails3[Groq API offline / Missing API key] -->|Returns null| PrefFallback[preferences.ts]
+    PrefFallback -->|Structured Mapping| BaseWeights[Map price & direct selections to base weights]
+    PrefFallback -->|Regex Scanning| RegexWeights[Boost weights using keyword matches]
+    PrefFallback -->|Local Embeddings| EmbedWeights[MiniLM cosine similarity threshold checks]
+  end
+
   classDef nestjs ${c.nestjs};
   classDef coreLib ${c.coreLib};
   classDef ai ${c.ai};
@@ -247,7 +264,7 @@ graph TD
 
   class CortexService,RouteParserFallback nestjs;
   class Groq ai;
-  class ExplanationFallback,FallbackText,RegexAirport,RegexNights,GroqFails1,GroqFails2 coreLib;
+  class ExplanationFallback,FallbackText,RegexAirport,RegexNights,GroqFails1,GroqFails2,PrefFallback,BaseWeights,RegexWeights,EmbedWeights,GroqFails3 coreLib;
   class Request client;
 `;
 
@@ -513,12 +530,140 @@ export default function HowItWorksPage() {
           </Stack>
         </Card>
 
-        {/* 7. Live Trace Payloads Card */}
+        {/* 7. Core Deterministic Algorithms Card */}
+        <Card className="bg-bg-surface border-border-default p-6">
+          <Stack gap={5}>
+            <Stack gap={1} className="border-b border-border-default/60 pb-3">
+              <Text variant="heading" size="lg" className="font-semibold text-text-primary">
+                7. Core Deterministic Algorithms
+              </Text>
+              <Text variant="body" size="sm" className="text-text-secondary">
+                The business logic is completely isolated from NestJS and database layers in the core <span className="font-mono text-xs text-accent">saarathi/</span> package. This guarantees 100% testable, predictable, and sub-millisecond execution.
+              </Text>
+            </Stack>
+
+            <Stack gap={6} className="divide-y divide-border-default/40">
+              {/* Preferences.ts */}
+              <Stack gap={2} className="pt-0">
+                <Text variant="heading" size="base" className="font-bold text-accent">
+                  A. Preference Weight Inference (<span className="font-mono text-sm">CortexService</span> / <span className="font-mono text-sm">preferences.ts</span>)
+                </Text>
+                <Text variant="body" size="sm" className="text-text-secondary leading-relaxed">
+                  Infers numeric weights (0 to 1) for travel dimensions based on structured profile fields and raw unstructured history.
+                </Text>
+                <ul className="list-disc pl-5 text-xs text-text-secondary space-y-1.5 leading-relaxed">
+                  <li>
+                    <strong className="text-text-primary">LLM-Driven Inference:</strong> The primary path leverages Groq to analyze structured traveler settings alongside unstructured history, outputting weights and structured evidence arrays.
+                  </li>
+                  <li>
+                    <strong className="text-text-primary">Local Fallback Pipeline:</strong> If the LLM is offline or keys are missing, the system gracefully falls back to the deterministic local pipeline:
+                    <ul className="list-circle pl-5 mt-1 space-y-1">
+                      <li><strong className="text-text-primary">Structured Mapping:</strong> Maps dropdown choices (e.g. <code className="font-mono text-[11px] bg-bg-surface-raised px-1 py-0.5 rounded">strong</code> direct &rarr; 0.9, <code className="font-mono text-[11px] bg-bg-surface-raised px-1 py-0.5 rounded">high</code> price sensitivity &rarr; 0.85).</li>
+                      <li><strong className="text-text-primary">Regex Phrase Scanning:</strong> Scans history/prompts for keywords (e.g., <code className="font-mono text-[11px] bg-bg-surface-raised px-1 py-0.5 rounded">/hate connections/i</code> boosts direct weight by +0.1).</li>
+                      <li><strong className="text-text-primary">Embedding Fallback:</strong> Cosine similarity checks using local <code className="font-mono text-[11px] bg-bg-surface-raised px-1 py-0.5 rounded">all-MiniLM-L6-v2</code> embeddings.</li>
+                    </ul>
+                  </li>
+                </ul>
+              </Stack>
+
+              {/* Ranking.ts */}
+              <Stack gap={2} className="pt-4">
+                <Text variant="heading" size="base" className="font-bold text-accent">
+                  B. Flight Filtering & Linear Scoring (<span className="font-mono text-sm">ranking.ts</span>)
+                </Text>
+                <Text variant="body" size="sm" className="text-text-secondary leading-relaxed">
+                  Applies absolute constraints to candidate flights and computes a linear combination score.
+                </Text>
+                <ul className="list-disc pl-5 text-xs text-text-secondary space-y-1.5 leading-relaxed">
+                  <li>
+                    <strong className="text-text-primary">Hard Constraints:</strong> Filters the flight pool by origin, destination, max layover minutes, date flexibility limits, and departs redeyes if <code className="font-mono text-[11px] bg-bg-surface-raised px-1 py-0.5 rounded">avoid_redeye</code> is active.
+                  </li>
+                  <li>
+                    <strong className="text-text-primary">Linear Scoring Equation:</strong>
+                    <div className="bg-bg-surface-raised p-2.5 my-1.5 rounded-md font-mono text-[11px] overflow-x-auto text-text-primary border border-border-default/60">
+                      Score = (costWeight * PriceScore + directWeight * DirectScore + (1 - costWeight) * 0.5 * DurationScore + convenienceWeight * 0.3 * CabinScore + 0.2 * AirlineScore + baggageWeight * BaggageScore) * DemandAdjustment * HolidayAdjustment + DayBonus
+                    </div>
+                  </li>
+                  <li>
+                    <strong className="text-text-primary">Scoring Adjusters:</strong> Price and duration are normalized relative to the current candidate pool. It applies multipliers for demand tiers (e.g., low demand &rarr; 1.05x bonus) and holiday seasons (0.95x penalty), plus a soft <code className="font-mono text-[11px] bg-bg-surface-raised px-1 py-0.5 rounded">+0.15</code> bonus for preferred days of the week.
+                  </li>
+                </ul>
+              </Stack>
+
+              {/* Multicity.ts */}
+              <Stack gap={2} className="pt-4">
+                <Text variant="heading" size="base" className="font-bold text-accent">
+                  C. Multi-City Routing Optimizer (<span className="font-mono text-sm">multicity.ts</span>)
+                </Text>
+                <Text variant="body" size="sm" className="text-text-secondary leading-relaxed">
+                  Finds the optimal sequencing and flight selection across multiple city destinations.
+                </Text>
+                <ul className="list-disc pl-5 text-xs text-text-secondary space-y-1.5 leading-relaxed">
+                  <li>
+                    <strong className="text-text-primary">Permutation Search:</strong> Generates all valid permutations of city order (e.g., origin &rarr; City A &rarr; City B &rarr; origin vs origin &rarr; City B &rarr; City A &rarr; origin).
+                  </li>
+                  <li>
+                    <strong className="text-text-primary">Branch-and-Bound Backtracking:</strong> Recursively selects the best flight for each leg. Prunes branches early if the current score sum + max potential remaining score cannot beat the best sequence found so far.
+                  </li>
+                  <li>
+                    <strong className="text-text-primary">Stay Duration Constraints:</strong> Verifies that the arrival timestamp of leg N is at least <code className="font-mono text-[11px] bg-bg-surface-raised px-1 py-0.5 rounded">stayDurations[city]</code> nights prior to the departure of leg N+1.
+                  </li>
+                </ul>
+              </Stack>
+
+              {/* Counterfactuals.ts */}
+              <Stack gap={2} className="pt-4">
+                <Text variant="heading" size="base" className="font-bold text-accent">
+                  D. Counterfactual Inversion (<span className="font-mono text-sm">counterfactuals.ts</span>)
+                </Text>
+                <Text variant="body" size="sm" className="text-text-secondary leading-relaxed">
+                  Algebraically inverts the scoring function to find the exact boundary threshold that would flip the recommendation.
+                </Text>
+                <ul className="list-disc pl-5 text-xs text-text-secondary space-y-1.5 leading-relaxed">
+                  <li>
+                    <strong className="text-text-primary">Closed-Form Price Thresholds:</strong> For runner-up flights, it solves:
+                    <div className="bg-bg-surface-raised p-2 my-1.5 rounded font-mono text-[11px] text-text-primary border border-border-default/60 text-center">
+                      priceDrop = (Score_champion - Score_challenger) * PriceRange / (cost_weight * demandAdj * holidayAdj)
+                    </div>
+                    If the required drop is &le; 60% of the flight fare, it outputs a realistic threshold price.
+                  </li>
+                  <li>
+                    <strong className="text-text-primary">Hypothetical Scenario Toggles:</strong> Programmatically applies specific perturbations (like allowing stopovers, ignoring airline loyalty, shifting departure dates) and re-runs the ranking engine to report the hypothetical winner.
+                  </li>
+                </ul>
+              </Stack>
+
+              {/* Confidence.ts */}
+              <Stack gap={2} className="pt-4">
+                <Text variant="heading" size="base" className="font-bold text-accent">
+                  E. Confidence Assessment (<span className="font-mono text-sm">confidence.ts</span>)
+                </Text>
+                <Text variant="body" size="sm" className="text-text-secondary leading-relaxed">
+                  Measures match percentage and determines the certainty tier of the recommendation.
+                </Text>
+                <ul className="list-disc pl-5 text-xs text-text-secondary space-y-1.5 leading-relaxed">
+                  <li>
+                    <strong className="text-text-primary">Match Percentage:</strong> Measures the champion&apos;s score against the theoretical maximum achievable score under the current preference weights.
+                  </li>
+                  <li>
+                    <strong className="text-text-primary">Signal Validation:</strong> Validates preference dimensions. If a preference has both structured profile support and behavioral/textual history evidence, it is classified as a <code className="font-mono text-[11px] bg-bg-surface-raised px-1 py-0.5 rounded text-accent">Strong Signal</code>.
+                  </li>
+                  <li>
+                    <strong className="text-text-primary">Confidence Tiering:</strong>
+                    Assigns <code className="font-mono text-[11px] bg-bg-surface-raised px-1 py-0.5 rounded text-accent">high</code> confidence if the score margin between first and second place is &gt; 0.1, <code className="font-mono text-[11px] bg-bg-surface-raised px-1 py-0.5 rounded text-accent">medium</code> for standard margins, and <code className="font-mono text-[11px] bg-bg-surface-raised px-1 py-0.5 rounded text-accent">low</code> if the margin is &lt; 0.04 or if conflicting strong signals exist (demotes to medium if match % &ge; 80%).
+                  </li>
+                </ul>
+              </Stack>
+            </Stack>
+          </Stack>
+        </Card>
+
+        {/* 8. Live Trace Payloads Card */}
         <Card className="bg-bg-surface border-border-default p-6">
           <Stack gap={4}>
             <Stack gap={1} className="border-b border-border-default/60 pb-3">
               <Text variant="heading" size="lg" className="font-semibold text-text-primary">
-                7. Live Execution Trace Payloads
+                8. Live Execution Trace Payloads
               </Text>
               <Text variant="body" size="sm" className="text-text-secondary">
                 The payloads below represent a live, 7-stage diagnostic trace fetched from traveler U01&apos;s request. Turn on the backend to refresh this data live.
