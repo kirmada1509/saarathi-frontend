@@ -10,8 +10,7 @@ import { useUIStore } from "@/lib/store";
 import { Moon, Sun, Search, Menu, PlaneTakeoff } from "lucide-react";
 
 const NAV_LINKS = [
-  { href: "/app", label: "Compose" },
-  { href: "/app/multi-city", label: "Multi-City" },
+  { href: "/app", label: "Plan Trip" },
   { href: "/app/travelers", label: "Travelers" },
   { href: "/app/compare", label: "Compare" },
   { href: "/app/how-it-works", label: "How It Works" },
