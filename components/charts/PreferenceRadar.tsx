@@ -1,6 +1,6 @@
 "use client";
 
-import { PolarAngleAxis, PolarGrid, Radar, RadarChart } from "recharts";
+import { PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart } from "recharts";
 import {
   type ChartConfig,
   ChartContainer,
@@ -33,6 +33,7 @@ export function PreferenceRadar({
         <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
         <PolarAngleAxis dataKey="dimension" tick={{ fill: "var(--text-secondary)", fontSize: 11 }} />
         <PolarGrid stroke="var(--border-default)" />
+        <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
         <Radar
           dataKey="weight"
           fill="var(--accent)"

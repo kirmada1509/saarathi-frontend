@@ -1,33 +1,33 @@
 "use client";
 
 import * as React from "react";
-import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Container, Stack, EmptyState, NavLink, Card, Text } from "@/components/ui/primitives";
-import { Compass, Sparkles } from "lucide-react";
+import { Container, Stack, EmptyState, NavLink } from "@/components/ui/primitives";
+import { Compass, AlertCircle, Plane } from "lucide-react";
 import { parseDecisionParams, buildDecisionQuery, perturbationsEqual } from "@/lib/decision-params";
 import { useRecommendation, useLegRecommendation, useUsers } from "@/lib/queries";
-import { DecisionHeader } from "@/components/decision/DecisionHeader";
-import { ItineraryTimeline } from "@/components/decision/ItineraryTimeline";
-import { VerdictCard } from "@/components/decision/VerdictCard";
-import { EvidencePanel } from "@/components/decision/EvidencePanel";
-import { OpportunityCostPanel } from "@/components/decision/OpportunityCostPanel";
-import { CounterfactualPanel } from "@/components/decision/CounterfactualPanel";
-import { RankedList } from "@/components/decision/RankedList";
-import { TraceBar } from "@/components/decision/TraceBar";
-import { ConfidenceGauge } from "@/components/charts/ConfidenceGauge";
+import { ExecutiveSummary } from "@/components/decision/ExecutiveSummary";
+import { JourneyTimeline } from "@/components/decision/JourneyTimeline";
+import { AIDecisionCenter } from "@/components/decision/AIDecisionCenter";
+import { AlternativesPanel } from "@/components/decision/AlternativesPanel";
+import { TechnicalExplainability } from "@/components/decision/TechnicalExplainability";
+import { StickyNav } from "@/components/decision/StickyNav";
 import type { Perturbation } from "@/core/types";
-
-const RouteMap = dynamic(() => import("@/components/map/RouteMap").then((m) => m.RouteMap), {
-  ssr: false,
-  loading: () => <Stack className="h-full w-full animate-pulse bg-bg-surface-raised" />,
-});
+import type { SectionId } from "@/components/decision/StickyNav";
 
 export function DecisionScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const params = parseDecisionParams(searchParams);
   const { data: users } = useUsers();
+
+  // Section refs for scroll-to behavior
+  const summaryRef = React.useRef<HTMLElement>(null);
+  const journeyRef = React.useRef<HTMLElement>(null);
+  const aiCenterRef = React.useRef<HTMLElement>(null);
+  const alternativesRef = React.useRef<HTMLElement>(null);
+  const technicalRef = React.useRef<HTMLElement>(null);
+  const [activeSection, setActiveSection] = React.useState<SectionId>("summary");
 
   const { data: response, isLoading, error } = useRecommendation(
     params
@@ -87,6 +87,49 @@ export function DecisionScreen() {
     updateUrl({ leg: index });
   }
 
+  function handleScrollToSection(sectionId: SectionId) {
+    const refMap: Record<SectionId, React.RefObject<HTMLElement | null>> = {
+      summary: summaryRef,
+      journey: journeyRef,
+      "ai-center": aiCenterRef,
+      alternatives: alternativesRef,
+      technical: technicalRef,
+    };
+    const ref = refMap[sectionId];
+    if (ref.current) {
+      ref.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      setActiveSection(sectionId);
+    }
+  }
+
+  // Observe which section is in view
+  React.useEffect(() => {
+    const refs = [
+      { id: "summary" as SectionId, ref: summaryRef },
+      { id: "journey" as SectionId, ref: journeyRef },
+      { id: "ai-center" as SectionId, ref: aiCenterRef },
+      { id: "alternatives" as SectionId, ref: alternativesRef },
+      { id: "technical" as SectionId, ref: technicalRef },
+    ];
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const found = refs.find((r) => r.ref.current === entry.target);
+            if (found) setActiveSection(found.id);
+          }
+        }
+      },
+      { rootMargin: "-30% 0px -60% 0px", threshold: 0 }
+    );
+
+    for (const { ref } of refs) {
+      if (ref.current) observer.observe(ref.current);
+    }
+    return () => observer.disconnect();
+  }, [activeResponse]);
+
   if (!params) {
     return (
       <Container className="py-16">
@@ -108,112 +151,106 @@ export function DecisionScreen() {
   }
 
   const user = users?.find((u) => u.user_id === params.userId);
-
-  const mapLegs = isMultiCity && response?.itinerary
-    ? response.itinerary.legs.map((l, i) => ({ from: l.from, to: l.to, active: i === legIndex }))
-    : activeResponse?.verdict
-    ? [{ from: activeResponse.verdict.origin, to: activeResponse.verdict.destination, active: true }]
-    : [];
+  const isPageLoading = isLoading || (isMultiCity && legLoading && !legResponse);
 
   return (
-    <Stack className="pb-20">
-      <Container className="py-6">
-        <Stack gap={6}>
-          <DecisionHeader params={params} user={user} mode={response?.mode} />
-
+    <Stack className="pb-20 min-h-screen bg-bg-base">
+      <Container className="py-8">
+        <Stack gap={8}>
+          {/* Error state */}
           {error && (
             <EmptyState
               title="Request failed"
               description={error instanceof Error ? error.message : String(error)}
+              icon={<AlertCircle className="w-12 h-12 text-signal-negative opacity-60" />}
             />
           )}
 
-          {isMultiCity && response?.itinerary && (
-            <ItineraryTimeline
-              itinerary={response.itinerary}
-              selectedLegIndex={legIndex}
-              onSelectLeg={handleSelectLeg}
-              legLoading={legLoading}
+          {/* No results state */}
+          {!isPageLoading && response && !response.verdict && !isMultiCity && (
+            <EmptyState
+              title="Zero matching flights found"
+              description="No flights in the inventory matched this traveler's strict constraints. Try relaxing constraints in the Sensitivity tab of the AI Decision Center."
+              icon={<Plane className="w-12 h-12 text-signal-negative opacity-60" />}
+              className="border-signal-negative/30"
             />
           )}
 
-          <VerdictCard
-            response={response}
-            activeResponse={activeResponse}
-            isLoading={isLoading || (isMultiCity && legLoading && !legResponse)}
-          />
+          {/* ─────────────────────────────────────────────
+              SECTION 1: Executive Summary (Hero)
+          ───────────────────────────────────────────── */}
+          <section ref={summaryRef}>
+            <ExecutiveSummary
+              response={response}
+              activeResponse={activeResponse}
+              isLoading={isPageLoading}
+              user={user}
+              onScrollToAlternatives={() => handleScrollToSection("alternatives")}
+            />
+          </section>
 
-          {activeResponse && (
-            <Stack className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Main Column (2/3 width) */}
-              <Stack gap={6} className="lg:col-span-2">
-                {/* AI Rationale & Explanation */}
-                <Card className="bg-bg-surface border-border-default p-5 h-full">
-                  <Stack gap={4}>
-                    <Stack direction="row" align="center" gap={2} className="border-b border-border-default pb-3">
-                      <Sparkles className="w-5 h-5 text-accent animate-pulse" />
-                      <Text variant="heading" size="lg" className="text-text-primary font-bold">
-                        AI Rationale & Explanation
-                      </Text>
-                    </Stack>
-                    <Stack className="prose dark:prose-invert max-w-none">
-                      <Text variant="body" size="sm" className="leading-relaxed text-text-primary/95 whitespace-pre-wrap">
-                        {activeResponse.explanation}
-                      </Text>
-                    </Stack>
-                  </Stack>
-                </Card>
-
-                {/* PreferenceRadar & Evidence profile */}
-                <EvidencePanel preference={activeResponse.preference} confidence={activeResponse.confidence} />
-
-                {/* Counterfactual Panel */}
-                <CounterfactualPanel
-                  counterfactuals={activeResponse.counterfactuals}
-                  activePerturbations={params.perturbations}
-                  hasVerdict={!!activeResponse.verdict}
-                  onToggle={handleTogglePerturbation}
-                  onClear={handleClearPerturbations}
-                />
-              </Stack>
-
-              {/* Sidebar Column (1/3 width) */}
-              <Stack gap={6} className="lg:col-span-1">
-                {/* Compact Route Map */}
-                {mapLegs.length > 0 && (
-                  <Card className="bg-bg-surface border-border-default overflow-hidden h-[280px]">
-                    <Stack gap={2} className="h-full">
-                      <Text variant="heading" size="sm" className="px-4 pt-3 font-semibold text-text-primary">
-                        Route Trajectory Map
-                      </Text>
-                      <Stack className="flex-1 rounded-b-lg overflow-hidden border-t border-border-default">
-                        <RouteMap legs={mapLegs} className="h-full w-full" />
-                      </Stack>
-                    </Stack>
-                  </Card>
-                )}
-
-                {/* Confidence Gauge */}
-                <Card className="bg-bg-surface border-border-default p-5 flex flex-col items-center justify-center">
-                  <Text variant="heading" size="sm" className="w-full text-left font-semibold text-text-primary border-b border-border-default pb-2 mb-4">
-                    Scoring Match Confidence
-                  </Text>
-                  <ConfidenceGauge confidence={activeResponse.confidence} />
-                </Card>
-              </Stack>
-            </Stack>
+          {/* ─────────────────────────────────────────────
+              SECTION 2: Interactive Journey Timeline
+          ───────────────────────────────────────────── */}
+          {(activeResponse?.verdict || response?.itinerary) && (
+            <section ref={journeyRef}>
+              <JourneyTimeline
+                response={response}
+                activeResponse={activeResponse}
+                selectedLegIndex={legIndex}
+                onSelectLeg={handleSelectLeg}
+                legLoading={legLoading}
+              />
+            </section>
           )}
 
+          {/* ─────────────────────────────────────────────
+              SECTION 3: AI Decision Center (tabbed)
+          ───────────────────────────────────────────── */}
           {activeResponse && (
-            <>
-              <OpportunityCostPanel alternatives={activeResponse.alternatives} verdict={activeResponse.verdict} />
-              <RankedList ranked={activeResponse.ranked} verdict={activeResponse.verdict} />
-            </>
+            <section ref={aiCenterRef}>
+              <AIDecisionCenter
+                activeResponse={activeResponse}
+                activePerturbations={params.perturbations}
+                onToggle={handleTogglePerturbation}
+                onClear={handleClearPerturbations}
+              />
+            </section>
+          )}
+
+          {/* ─────────────────────────────────────────────
+              SECTION 4: Alternatives
+          ───────────────────────────────────────────── */}
+          {activeResponse && activeResponse.alternatives.length > 0 && (
+            <section ref={alternativesRef}>
+              <AlternativesPanel
+                alternatives={activeResponse.alternatives}
+                verdict={activeResponse.verdict}
+              />
+            </section>
+          )}
+
+          {/* ─────────────────────────────────────────────
+              SECTION 5: Technical Explainability
+          ───────────────────────────────────────────── */}
+          {activeResponse && (
+            <section ref={technicalRef}>
+              <TechnicalExplainability
+                trace={response?.trace ?? []}
+                ranked={activeResponse.ranked}
+                verdict={activeResponse.verdict}
+              />
+            </section>
           )}
         </Stack>
       </Container>
 
-      {response && <TraceBar trace={response.trace} />}
+      {/* Sticky navigation bar */}
+      <StickyNav
+        activeSection={activeSection}
+        onNavigate={handleScrollToSection}
+        engineSynced={!isLoading && !legLoading}
+      />
     </Stack>
   );
 }
