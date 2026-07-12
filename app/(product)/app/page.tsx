@@ -5,15 +5,23 @@ import { Container, Stack, Text, GradientMotif, Card, Clickable, Skeleton } from
 import { RequestForm } from "@/components/composer/RequestForm";
 import { useUsers } from "@/lib/queries";
 import { getBenchmarkQuery } from "@/lib/benchmark-queries";
-import { Check } from "lucide-react";
+import { Check, Search } from "lucide-react";
 
 export default function ComposerPage() {
   const [selectedUserId, setSelectedUserId] = React.useState("U01");
+  const [searchQuery, setSearchQuery] = React.useState("");
   const { data: users = [], isLoading } = useUsers();
 
-  const benchmarkUsers = ["U01", "U02", "U03", "U04", "U05", "U06"]
-    .map((id) => users.find((u) => u.user_id === id))
-    .filter((u): u is NonNullable<typeof u> => !!u);
+  const filteredUsers = users.filter((u) => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return true;
+    return (
+      u.user_id.toLowerCase().includes(q) ||
+      u.home_city.toLowerCase().includes(q) ||
+      u.home_airport.toLowerCase().includes(q) ||
+      u.preferred_cabin.toLowerCase().includes(q)
+    );
+  });
 
   return (
     <Stack className="relative overflow-hidden">
@@ -37,26 +45,46 @@ export default function ComposerPage() {
 
             {/* Traveler Sidebar Column (1/3 width) */}
             <div className="lg:col-span-1">
-              <Card className="bg-bg-surface border-border-default h-full">
-                <Stack gap={4}>
-                  <Text variant="heading" size="base" className="font-semibold text-accent border-b border-border-default pb-3">
+              <Card className="bg-bg-surface border-border-default h-full max-h-[720px] flex flex-col">
+                <Stack gap={4} className="p-5 border-b border-border-default">
+                  <Text variant="heading" size="base" className="font-semibold text-accent">
                     Traveler Profiles
                   </Text>
                   <Text variant="subtext" size="xs">
-                    Select a benchmark traveler below to load their preferences and default query.
+                    Select any traveler to load their preferences and home base.
                   </Text>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Filter by ID, city, or cabin..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-8 pr-3 py-1.5 rounded-md border border-border-default bg-bg-base text-xs text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-1 focus:ring-accent"
+                    />
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-text-secondary" />
+                  </div>
+                </Stack>
 
+                <div className="flex-1 overflow-y-auto p-5 pt-3">
                   {isLoading ? (
                     <Stack gap={3}>
                       {Array.from({ length: 6 }).map((_, i) => (
                         <Skeleton key={i} className="h-32 w-full" />
                       ))}
                     </Stack>
+                  ) : filteredUsers.length === 0 ? (
+                    <Text variant="subtext" className="text-center py-8">
+                      No matching travelers found.
+                    </Text>
                   ) : (
-                    <Stack gap={3} className="max-h-[600px] overflow-y-auto pr-1">
-                      {benchmarkUsers.map((u) => {
+                    <Stack gap={3}>
+                      {filteredUsers.map((u) => {
                         const isSelected = u.user_id === selectedUserId;
                         const seed = getBenchmarkQuery(u.user_id);
+                        const displayQuery = seed.requestText !== "Find me flights." 
+                          ? seed.requestText 
+                          : `I want to find a flight from ${u.home_airport} to...`;
+
                         return (
                           <Clickable
                             key={u.user_id}
@@ -94,7 +122,7 @@ export default function ComposerPage() {
                                 </span>
                               </div>
                               <Text variant="subtext" size="xs" className="italic text-text-secondary/80 line-clamp-2 border-t border-border-default/40 pt-2 mt-1">
-                                &ldquo;{seed.requestText}&rdquo;
+                                &ldquo;{displayQuery}&rdquo;
                               </Text>
                             </Stack>
                           </Clickable>
@@ -102,7 +130,7 @@ export default function ComposerPage() {
                       })}
                     </Stack>
                   )}
-                </Stack>
+                </div>
               </Card>
             </div>
           </div>

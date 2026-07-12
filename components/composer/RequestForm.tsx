@@ -30,9 +30,19 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
   React.useEffect(() => {
     if (selectedUserId) {
       const seed = getBenchmarkQuery(selectedUserId);
-      setRequestText(seed.requestText);
       setError(null);
       setStayDurations({});
+
+      if (seed.requestText !== "Find me flights.") {
+        setRequestText(seed.requestText);
+      } else {
+        const activeUser = users.find((u) => u.user_id === selectedUserId);
+        if (activeUser) {
+          setRequestText(`I want to find a flight from ${activeUser.home_airport} to `);
+        } else {
+          setRequestText("Find me flights.");
+        }
+      }
 
       // Pre-populate manual controls for fallback/override
       if (seed.cities.length > 0) {
@@ -45,7 +55,7 @@ export function RequestForm({ selectedUserId }: { selectedUserId: string }) {
         setRouteMode("single");
       }
     }
-  }, [selectedUserId]);
+  }, [selectedUserId, users]);
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
