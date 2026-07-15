@@ -32,6 +32,7 @@ export async function fetchUsers(): Promise<UserSummary[]> {
 }
 
 export interface CreateUserPayload {
+  age: number;
   home_airport: string;
   price_sensitivity: "low" | "medium" | "high" | "none";
   direct_preference: "strong" | "moderate" | "none";

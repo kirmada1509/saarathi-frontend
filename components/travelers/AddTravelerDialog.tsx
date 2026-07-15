@@ -34,7 +34,9 @@ export function AddTravelerDialog({
   onOpenChange,
   onSuccess,
 }: AddTravelerDialogProps) {
+  const ageOptions = Array.from({ length: 83 }, (_, index) => index + 18);
   const [homeAirport, setHomeAirport] = React.useState("JFK");
+  const [age, setAge] = React.useState(30);
   const [priceSensitivity, setPriceSensitivity] = React.useState<"low" | "medium" | "high" | "none">("medium");
   const [directPreference, setDirectPreference] = React.useState<"strong" | "moderate" | "none">("moderate");
   const [preferredCabin, setPreferredCabin] = React.useState("Economy");
@@ -50,6 +52,7 @@ export function AddTravelerDialog({
 
     try {
       const payload: CreateUserPayload = {
+        age,
         home_airport: homeAirport.toUpperCase().trim(),
         price_sensitivity: priceSensitivity,
         direct_preference: directPreference,
@@ -75,6 +78,7 @@ export function AddTravelerDialog({
       setPreferredCabin("Economy");
       setPreferredAirlines("");
       setRawHistory("hate connections | cheapest option always");
+      setAge(30);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unexpected error occurred");
     } finally {
@@ -100,6 +104,24 @@ export function AddTravelerDialog({
               {error}
             </Stack>
           )}
+
+          <Stack gap={1}>
+            <label className="text-xs font-semibold text-text-primary">
+              Age *
+            </label>
+            <Select value={String(age)} onValueChange={(v) => setAge(Number(v))}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ageOptions.map((option) => (
+                  <SelectItem key={option} value={String(option)}>
+                    {option}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Stack>
 
           <Stack gap={1}>
             <label className="text-xs font-semibold text-text-primary">
