@@ -27,7 +27,7 @@ async function parseJsonOrThrow<T>(res: Response): Promise<T> {
 }
 
 export async function fetchUsers(): Promise<UserSummary[]> {
-  const res = await fetch(`${API_BASE_URL}/api/users`);
+  const res = await fetch(`${API_BASE_URL}/users`);
   return parseJsonOrThrow<UserSummary[]>(res);
 }
 
@@ -43,7 +43,7 @@ export interface CreateUserPayload {
 export async function createUser(
   payload: CreateUserPayload
 ): Promise<UserSummary> {
-  const res = await fetch(`${API_BASE_URL}/api/users`, {
+  const res = await fetch(`${API_BASE_URL}/users`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -54,7 +54,7 @@ export async function createUser(
 export async function fetchRecommendation(
   payload: RecommendPayload
 ): Promise<RecommendResponse> {
-  const res = await fetch(`${API_BASE_URL}/api/recommend`, {
+  const res = await fetch(`${API_BASE_URL}/recommend`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -78,7 +78,7 @@ export async function parseRoute(payload: {
   userId: string;
   requestText: string;
 }): Promise<InferredRouteResponse> {
-  const res = await fetch(`${API_BASE_URL}/api/recommend/parse-route`, {
+  const res = await fetch(`${API_BASE_URL}/recommend/parse-route`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
